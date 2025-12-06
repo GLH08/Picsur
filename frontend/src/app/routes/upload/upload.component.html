@@ -1,0 +1,15 @@
+<div class="content-border">
+  <my-dropzone *ngIf="canUpload">
+    <input type="file" fileInput [formControl]="fileControl" multiple accept="image/*" />
+    <div class="centered">
+      <h1>上传图片</h1>
+      <p>拖拽、粘贴或点击选择图片</p>
+      <p class="hint">支持多图上传</p>
+    </div>
+  </my-dropzone>
+
+  <div class="centered" *ngIf="!canUpload">
+    <h1><a routerLink="/user/login">请登录</a></h1>
+    <p>您还没有上传权限</p>
+  </div>
+</div>

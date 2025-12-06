@@ -1,0 +1,86 @@
+<h1>角色</h1>
+
+<mat-table [dataSource]="dataSource" class="mat-elevation-z2">
+  <ng-container matColumnDef="name">
+    <mat-header-cell *matHeaderCellDef>名称</mat-header-cell>
+    <mat-cell *matCellDef="let role">{{ role.name }}</mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="permissions">
+    <mat-header-cell class="d-none d-md-flex" *matHeaderCellDef>
+      权限
+    </mat-header-cell>
+    <mat-cell class="d-none d-md-flex" *matCellDef="let role">
+      <mat-chip-listbox aria-label="角色权限">
+        <mat-chip
+          [disableRipple]="true"
+          [disabled]="true"
+          *ngIf="isSystem(role)"
+        >
+          系统
+        </mat-chip>
+        <mat-chip
+          [disableRipple]="true"
+          *ngFor="
+            let permission of role.permissions.slice(0, permissionsTruncate)
+          "
+        >
+          {{ uiFriendlyPermission(permission) }}
+        </mat-chip>
+        <mat-chip
+          [disableRipple]="true"
+          *ngIf="role.permissions.length > permissionsTruncate"
+        >
+          +{{ role.permissions.length - permissionsTruncate }}
+        </mat-chip>
+      </mat-chip-listbox>
+    </mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="actions">
+    <mat-header-cell *matHeaderCellDef>操作</mat-header-cell>
+    <mat-cell *matCellDef="let role">
+      <button
+        *ngIf="!isImmutable(role)"
+        mat-icon-button
+        (click)="editRole(role)"
+      >
+        <mat-icon fontSet="material-icons-outlined" aria-label="编辑">
+          edit
+        </mat-icon>
+      </button>
+      <button
+        *ngIf="!isSystem(role)"
+        mat-icon-button
+        (click)="deleteRole(role)"
+      >
+        <mat-icon
+          fontSet="material-icons-outlined"
+          class="icon-red"
+          aria-label="删除"
+        >
+          delete
+        </mat-icon>
+      </button>
+    </mat-cell>
+  </ng-container>
+
+  <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+  <mat-row *matRowDef="let row; columns: displayedColumns"> </mat-row>
+</mat-table>
+
+<mat-paginator
+  class="mat-elevation-z2"
+  [pageSizeOptions]="pageSizeOptions"
+  [pageSize]="startingPageSize"
+  [showFirstLastButtons]="bootstrapService.isNotMobile() | async"
+  [hidePageSize]="bootstrapService.isMobile() | async"
+  aria-label="选择角色页面"
+>
+</mat-paginator>
+
+<fab
+  aria-label="添加角色"
+  (click)="addRole()"
+  tooltip="创建新角色"
+></fab>

@@ -1,0 +1,49 @@
+mat-table {
+  width: 100%;
+}
+
+.mat-column-actions {
+  justify-content: end;
+  flex-grow: 0.5;
+}
+
+.mat-column-key {
+  flex-grow: 2;
+}
+
+.mat-column-last_used {
+  flex-grow: 0.5;
+}
+
+.icon-red {
+  color: #f44336;
+}
+
+.api-docs-hint {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  padding: 0.75rem 1rem;
+  background: rgba(103, 58, 183, 0.1);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: var(--text-secondary, rgba(255, 255, 255, 0.7));
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    color: #7c4dff;
+  }
+
+  a {
+    color: #7c4dff;
+    text-decoration: none;
+    font-weight: 500;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}

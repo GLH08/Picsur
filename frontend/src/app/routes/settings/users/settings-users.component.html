@@ -1,0 +1,83 @@
+<h1>用户</h1>
+
+<mat-table [dataSource]="dataSubject" class="mat-elevation-z2">
+  <ng-container matColumnDef="username">
+    <mat-header-cell *matHeaderCellDef>用户名</mat-header-cell>
+    <mat-cell *matCellDef="let user">{{ user.username }}</mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="roles">
+    <mat-header-cell class="d-none d-md-flex" *matHeaderCellDef
+      >角色</mat-header-cell
+    >
+    <mat-cell class="d-none d-md-flex" *matCellDef="let user">
+      <mat-chip-listbox aria-label="用户角色">
+        <mat-chip
+          [disableRipple]="true"
+          [disabled]="true"
+          *ngIf="isSystem(user)"
+        >
+          系统
+        </mat-chip>
+        <mat-chip
+          [disableRipple]="true"
+          *ngFor="let role of user.roles.slice(0, rolesTruncate)"
+        >
+          {{ role }}
+        </mat-chip>
+        <mat-chip
+          [disableRipple]="true"
+          *ngIf="user.roles.length > rolesTruncate"
+        >
+          +{{ user.roles.length - rolesTruncate }}
+        </mat-chip>
+      </mat-chip-listbox>
+    </mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="actions">
+    <mat-header-cell *matHeaderCellDef>操作</mat-header-cell>
+    <mat-cell *matCellDef="let user">
+      <button mat-icon-button (click)="editUser(user)">
+        <mat-icon fontSet="material-icons-outlined" aria-label="编辑">
+          edit
+        </mat-icon>
+      </button>
+      <button
+        *ngIf="!isSystem(user)"
+        mat-icon-button
+        (click)="deleteUser(user)"
+      >
+        <mat-icon
+          fontSet="material-icons-outlined"
+          class="icon-red"
+          aria-label="删除"
+        >
+          delete
+        </mat-icon>
+      </button>
+    </mat-cell>
+  </ng-container>
+
+  <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+  <mat-row *matRowDef="let row; columns: displayedColumns"> </mat-row>
+</mat-table>
+
+<mat-paginator
+  class="mat-elevation-z2"
+  [pageSizeOptions]="pageSizeOptions"
+  [pageSize]="startingPageSize"
+  [showFirstLastButtons]="bootstrapService.isNotMobile() | async"
+  [hidePageSize]="bootstrapService.isMobile() | async"
+  [length]="totalUsers"
+  aria-label="选择用户页面"
+  (page)="updateSubject.next($event)"
+>
+</mat-paginator>
+
+<fab
+  aria-label="添加用户"
+  (click)="addUser()"
+  icon="person_add"
+  tooltip="创建新用户"
+></fab>

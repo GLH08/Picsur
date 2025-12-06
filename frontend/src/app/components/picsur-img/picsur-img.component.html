@@ -1,0 +1,18 @@
+<div class="img-container" (nguiInview)="onInview()" (nguiOutview)="onOutview()">
+  <!-- 加载中 -->
+  <mat-spinner *ngIf="state === 'init' || state === 'loading'" diameter="40"></mat-spinner>
+  
+  <!-- 图片 -->
+  <img
+    *ngIf="displayUrl && state !== 'error'"
+    [src]="displayUrl"
+    [style.opacity]="state === 'loaded' ? 1 : 0"
+    (load)="onImageLoad()"
+    (error)="onImageError()"
+    loading="lazy"
+    alt="image"
+  />
+  
+  <!-- 错误状态 -->
+  <mat-icon *ngIf="state === 'error'" class="error-icon">broken_image</mat-icon>
+</div>

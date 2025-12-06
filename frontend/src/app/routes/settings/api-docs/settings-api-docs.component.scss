@@ -1,0 +1,153 @@
+.api-docs-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-width: 900px;
+}
+
+.api-section {
+  mat-card-header {
+    margin-bottom: 1rem;
+
+    mat-icon[mat-card-avatar] {
+      background: rgba(103, 58, 183, 0.2);
+      color: #7c4dff;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  }
+
+  mat-card-content {
+    p {
+      margin: 0.5rem 0;
+      color: var(--text-secondary, rgba(255, 255, 255, 0.7));
+    }
+
+    h4 {
+      margin: 1rem 0 0.5rem;
+      font-size: 0.95rem;
+      color: var(--text-primary, rgba(255, 255, 255, 0.9));
+
+      &:first-child {
+        margin-top: 0;
+      }
+    }
+
+    .hint {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 1rem;
+      padding: 0.75rem 1rem;
+      background: rgba(103, 58, 183, 0.1);
+      border-radius: 8px;
+      font-size: 0.9rem;
+
+      mat-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+        color: #7c4dff;
+      }
+
+      a {
+        color: #7c4dff;
+        text-decoration: none;
+
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+
+      &.warning {
+        background: rgba(255, 152, 0, 0.15);
+        border: 1px solid rgba(255, 152, 0, 0.3);
+
+        mat-icon {
+          color: #ff9800;
+        }
+      }
+    }
+  }
+}
+
+.inline-code {
+  background: var(--card-bg, rgba(255, 255, 255, 0.1));
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-size: 0.9em;
+}
+
+.code-block {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  background: #1e1e1e;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  margin: 0.5rem 0;
+  overflow-x: auto;
+
+  code,
+  pre {
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 0.85rem;
+    color: #e0e0e0;
+    margin: 0;
+    white-space: pre;
+  }
+
+  button {
+    flex-shrink: 0;
+    margin-left: 0.5rem;
+    color: rgba(255, 255, 255, 0.6);
+
+    &:hover {
+      color: #fff;
+    }
+  }
+
+  &.multi-line {
+    pre {
+      flex: 1;
+      overflow-x: auto;
+    }
+  }
+}
+
+mat-accordion {
+  mat-expansion-panel {
+    background: var(--card-bg, rgba(255, 255, 255, 0.03));
+    margin-bottom: 0.5rem;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    p {
+      margin: 0;
+    }
+  }
+}
+
+// 亮色模式适配
+:host-context(.theme-light) {
+  .code-block {
+    background: #263238;
+
+    code,
+    pre {
+      color: #e0e0e0;
+    }
+  }
+
+  .inline-code {
+    background: rgba(0, 0, 0, 0.08);
+    color: #d32f2f;
+  }
+}

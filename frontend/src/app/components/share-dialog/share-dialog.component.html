@@ -1,0 +1,87 @@
+<div class="share-dialog">
+  <div class="dialog-header">
+    <h2>分享图片</h2>
+    <button mat-icon-button (click)="close()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <div class="dialog-content">
+    <!-- 图片预览 -->
+    <div class="image-preview">
+      <img [src]="data.imageUrl" [alt]="data.image.file_name || '图片'" />
+      <div class="image-info">
+        <h3 class="selectable">{{ data.image.file_name || '未命名图片' }}</h3>
+      </div>
+    </div>
+
+    <!-- 复制格式选择 -->
+    <div class="format-section" *ngIf="!showHistory">
+      <h3>选择复制格式</h3>
+      <div class="format-options">
+        <div
+          class="format-option"
+          *ngFor="let format of copyFormats"
+          [class.selected]="selectedFormat === format.value"
+          (click)="selectedFormat = format.value"
+        >
+          <mat-icon>{{ format.icon }}</mat-icon>
+          <span>{{ format.label }}</span>
+        </div>
+      </div>
+
+      <!-- 预览生成的链接 -->
+      <div class="link-preview">
+        <label>预览：</label>
+        <div class="preview-content selectable">{{ getFormattedLink() }}</div>
+      </div>
+
+      <!-- 复制按钮 -->
+      <button mat-raised-button color="primary" class="copy-btn" (click)="copyFormattedLink()">
+        <mat-icon>content_copy</mat-icon>
+        复制到剪贴板
+      </button>
+    </div>
+
+    <!-- 分享历史 -->
+    <div class="share-history" *ngIf="showHistory">
+      <h3>分享历史</h3>
+      <div class="history-list" *ngIf="shareHistory.length > 0">
+        <div
+          class="history-item"
+          *ngFor="let record of shareHistory"
+          (click)="viewHistoryShare(record)"
+        >
+          <div class="history-info">
+            <span class="history-name selectable">{{ record.imageName }}</span>
+            <span class="history-date">{{ formatDate(record.createdAt) }}</span>
+          </div>
+          <div class="history-actions">
+            <button mat-icon-button (click)="deleteHistoryShare(record, $event)" title="删除记录">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="history-empty" *ngIf="shareHistory.length === 0">
+        <mat-icon>history</mat-icon>
+        <p>暂无分享记录</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="dialog-actions">
+    <button mat-button (click)="toggleHistory()" *ngIf="!showHistory && shareHistory.length > 0">
+      <mat-icon>history</mat-icon>
+      历史 ({{ shareHistory.length }})
+    </button>
+    <button mat-button (click)="toggleHistory()" *ngIf="showHistory">
+      <mat-icon>arrow_back</mat-icon>
+      返回
+    </button>
+
+    <span class="spacer"></span>
+
+    <button mat-button (click)="close()">关闭</button>
+  </div>
+</div>

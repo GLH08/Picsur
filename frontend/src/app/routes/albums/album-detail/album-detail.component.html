@@ -1,0 +1,84 @@
+<div class="album-detail-container">
+  <!-- 返回按钮和标题 -->
+  <div class="album-header">
+    <button mat-icon-button (click)="goBack()" class="back-btn">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+
+    <div class="header-content" *ngIf="album && !editMode">
+      <h1 class="selectable">{{ album.name }}</h1>
+      <p class="album-description selectable" *ngIf="album.description">{{ album.description }}</p>
+      <div class="album-meta">
+        <span><mat-icon>photo</mat-icon> {{ images.length }} 张图片</span>
+        <span><mat-icon>schedule</mat-icon> {{ formatDate(album.created_at) }}</span>
+      </div>
+    </div>
+
+    <!-- 编辑模式 -->
+    <div class="header-edit" *ngIf="album && editMode">
+      <mat-form-field appearance="outline">
+        <mat-label>相册名称</mat-label>
+        <input matInput [(ngModel)]="editForm.name" maxlength="50" />
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>相册描述</mat-label>
+        <input matInput [(ngModel)]="editForm.description" maxlength="200" />
+      </mat-form-field>
+    </div>
+
+    <div class="header-actions">
+      <ng-container *ngIf="!editMode">
+        <button mat-icon-button (click)="startEdit()" title="编辑相册">
+          <mat-icon>edit</mat-icon>
+        </button>
+        <button mat-icon-button (click)="deleteAlbum()" title="删除相册" class="delete-btn">
+          <mat-icon>delete</mat-icon>
+        </button>
+      </ng-container>
+      <ng-container *ngIf="editMode">
+        <button mat-button (click)="cancelEdit()">取消</button>
+        <button mat-raised-button color="primary" (click)="saveEdit()" [disabled]="!editForm.name.trim()">
+          保存
+        </button>
+      </ng-container>
+    </div>
+  </div>
+
+  <!-- 加载状态 -->
+  <div class="loading-container" *ngIf="loading">
+    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    <p>加载中...</p>
+  </div>
+
+  <!-- 图片网格 -->
+  <div class="images-grid" *ngIf="!loading && images.length > 0">
+    <div class="image-item" *ngFor="let image of images">
+      <div class="image-wrapper" (click)="viewImage(image)">
+        <img [src]="getThumbnailUrl(image)" [alt]="image.file_name || '图片'" loading="lazy" />
+        <div class="image-overlay">
+          <mat-icon>visibility</mat-icon>
+        </div>
+      </div>
+      <div class="image-actions">
+        <button mat-icon-button (click)="setAsCover(image)" title="设为封面">
+          <mat-icon>photo_camera</mat-icon>
+        </button>
+        <button mat-icon-button (click)="removeImage(image)" title="从相册移除" class="remove-btn">
+          <mat-icon>remove_circle</mat-icon>
+        </button>
+      </div>
+      <div class="image-name selectable" *ngIf="image.file_name">{{ image.file_name }}</div>
+    </div>
+  </div>
+
+  <!-- 空状态 -->
+  <div class="empty-state" *ngIf="!loading && images.length === 0">
+    <mat-icon>photo_library</mat-icon>
+    <h2>相册是空的</h2>
+    <p>在"我的图片"页面右键图片，选择"添加到相册"</p>
+    <button mat-stroked-button routerLink="/images" class="add-btn">
+      <mat-icon>image</mat-icon>
+      <span>去添加图片</span>
+    </button>
+  </div>
+</div>

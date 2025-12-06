@@ -1,0 +1,161 @@
+<h1>API 使用文档</h1>
+
+<div class="api-docs-content">
+  <mat-card class="api-section">
+    <mat-card-header>
+      <mat-icon mat-card-avatar>link</mat-icon>
+      <mat-card-title>API 端点</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="code-block">
+        <code>POST {{ apiBaseUrl }}/api/image/upload</code>
+        <button mat-icon-button (click)="copyToClipboard(apiBaseUrl + '/api/image/upload')">
+          <mat-icon>content_copy</mat-icon>
+        </button>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card class="api-section">
+    <mat-card-header>
+      <mat-icon mat-card-avatar>vpn_key</mat-icon>
+      <mat-card-title>认证方式</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <p>在请求头中添加 <code class="inline-code">Authorization</code> 字段：</p>
+      <div class="code-block">
+        <code>Authorization: Api-Key YOUR_API_KEY</code>
+      </div>
+      <p class="hint warning">
+        <mat-icon>warning</mat-icon>
+        注意：前缀是 <code class="inline-code">Api-Key</code>（带空格），不是 Bearer
+      </p>
+      <p class="hint">
+        <mat-icon>info</mat-icon>
+        请在 <a routerLink="/settings/apikeys">API密钥</a> 页面创建和管理您的 API 密钥
+      </p>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card class="api-section">
+    <mat-card-header>
+      <mat-icon mat-card-avatar>terminal</mat-icon>
+      <mat-card-title>cURL 示例</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="code-block multi-line">
+        <pre>curl -X POST "{{ apiBaseUrl }}/api/image/upload" \
+  -H "Authorization: Api-Key YOUR_API_KEY" \
+  -F "image=&#64;/path/to/image.png"</pre>
+        <button mat-icon-button (click)="copyCurlExample()">
+          <mat-icon>content_copy</mat-icon>
+        </button>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card class="api-section">
+    <mat-card-header>
+      <mat-icon mat-card-avatar>code</mat-icon>
+      <mat-card-title>Python 示例</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="code-block multi-line">
+        <pre>import requests
+
+url = "{{ apiBaseUrl }}/api/image/upload"
+headers = {{ '{' }}"Authorization": "Api-Key YOUR_API_KEY"{{ '}' }}
+files = {{ '{' }}"image": open("image.png", "rb"){{ '}' }}
+
+response = requests.post(url, headers=headers, files=files)
+print(response.json())</pre>
+        <button mat-icon-button (click)="copyPythonExample()">
+          <mat-icon>content_copy</mat-icon>
+        </button>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card class="api-section">
+    <mat-card-header>
+      <mat-icon mat-card-avatar>javascript</mat-icon>
+      <mat-card-title>JavaScript (fetch) 示例</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="code-block multi-line">
+        <pre>const formData = new FormData();
+formData.append('image', fileInput.files[0]);
+
+fetch('{{ apiBaseUrl }}/api/image/upload', {{ '{' }}
+  method: 'POST',
+  headers: {{ '{' }}'Authorization': 'Api-Key YOUR_API_KEY'{{ '}' }},
+  body: formData
+{{ '}' }})
+.then(res => res.json())
+.then(data => console.log(data));</pre>
+        <button mat-icon-button (click)="copyJsExample()">
+          <mat-icon>content_copy</mat-icon>
+        </button>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card class="api-section">
+    <mat-card-header>
+      <mat-icon mat-card-avatar>description</mat-icon>
+      <mat-card-title>响应格式</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <h4>成功响应</h4>
+      <div class="code-block multi-line">
+        <pre>{{ '{' }}
+  "success": true,
+  "data": {{ '{' }}
+    "id": "uuid-of-image",
+    "date_path": "20251129"
+  {{ '}' }}
+{{ '}' }}</pre>
+      </div>
+      <h4>错误响应</h4>
+      <div class="code-block multi-line">
+        <pre>{{ '{' }}
+  "success": false,
+  "error": {{ '{' }}
+    "code": "UNAUTHORIZED",
+    "message": "Invalid API key"
+  {{ '}' }}
+{{ '}' }}</pre>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card class="api-section">
+    <mat-card-header>
+      <mat-icon mat-card-avatar>help</mat-icon>
+      <mat-card-title>常见问题</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <mat-accordion>
+        <mat-expansion-panel>
+          <mat-expansion-panel-header>
+            <mat-panel-title>支持哪些图片格式？</mat-panel-title>
+          </mat-expansion-panel-header>
+          <p>支持 JPEG、PNG、GIF、WebP、BMP 等常见图片格式。</p>
+        </mat-expansion-panel>
+        <mat-expansion-panel>
+          <mat-expansion-panel-header>
+            <mat-panel-title>图片大小限制是多少？</mat-panel-title>
+          </mat-expansion-panel-header>
+          <p>默认最大上传大小为 128MB，具体限制取决于服务器配置。</p>
+        </mat-expansion-panel>
+        <mat-expansion-panel>
+          <mat-expansion-panel-header>
+            <mat-panel-title>如何获取上传后的图片链接？</mat-panel-title>
+          </mat-expansion-panel-header>
+          <p>上传成功后，使用返回的 date_path 和 id 拼接链接：<code class="inline-code">{{ apiBaseUrl }}/i/[date_path]/[id]</code></p>
+          <p>例如：<code class="inline-code">{{ apiBaseUrl }}/i/20251130/abc123</code></p>
+        </mat-expansion-panel>
+      </mat-accordion>
+    </mat-card-content>
+  </mat-card>
+</div>

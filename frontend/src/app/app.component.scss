@@ -1,0 +1,37 @@
+.grow-full {
+  flex-grow: 1;
+}
+
+.relative {
+  position: relative;
+}
+
+.header-spacer {
+  height: 64px;
+  margin-bottom: 32px;
+  flex-shrink: 0;
+}
+
+.sidenav-nav {
+  margin-top: 64px;
+  width: 220px;
+  border-right: none !important;
+}
+
+.sidenav-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+// 隐藏侧边栏拖动手柄
+::ng-deep .mat-drawer-inner-container {
+  overflow-x: hidden !important;
+}
+
+::ng-deep mat-sidenav {
+  // 移除拖动边框
+  &::after {
+    display: none !important;
+  }
+}

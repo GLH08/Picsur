@@ -1,0 +1,181 @@
+<h1>常规设置</h1>
+
+<div class="settings-content">
+  <!-- 用户偏好设置 -->
+  <ng-container *ngIf="preferences | async as prefs">
+    <div class="row" *ngIf="prefs && prefs.length > 0">
+      <ng-container *ngFor="let pref of prefs">
+        <pref-option
+          class="col-md-6 col-12"
+          [pref]="pref"
+          [update]="usrPrefService.setPreference.bind(usrPrefService)"
+          [name]="getName(pref.key)"
+          [helpText]="getHelpText(pref.key)"
+        ></pref-option>
+      </ng-container>
+    </div>
+  </ng-container>
+
+  <!-- 主题设置 -->
+  <mat-card class="settings-card">
+    <mat-card-header>
+      <mat-icon mat-card-avatar>palette</mat-icon>
+      <mat-card-title>外观设置</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="setting-item">
+        <div class="setting-info">
+          <span class="setting-label">主题模式</span>
+          <span class="setting-desc">选择您喜欢的界面主题</span>
+        </div>
+        <mat-button-toggle-group [value]="currentTheme" (change)="onThemeChange($event.value)">
+          <mat-button-toggle value="dark">
+            <mat-icon>dark_mode</mat-icon>
+            深色
+          </mat-button-toggle>
+          <mat-button-toggle value="light">
+            <mat-icon>light_mode</mat-icon>
+            浅色
+          </mat-button-toggle>
+        </mat-button-toggle-group>
+      </div>
+
+      <div class="setting-item">
+        <div class="setting-info">
+          <span class="setting-label">每行显示数量</span>
+          <span class="setting-desc">图片列表每行显示的图片数量</span>
+        </div>
+        <mat-form-field appearance="outline">
+          <mat-select [value]="settings.gridColumns" (selectionChange)="onGridColumnsChange($event.value)">
+            <mat-option [value]="2">2 列</mat-option>
+            <mat-option [value]="3">3 列</mat-option>
+            <mat-option [value]="4">4 列</mat-option>
+            <mat-option [value]="5">5 列</mat-option>
+            <mat-option [value]="6">6 列</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- 上传设置 -->
+  <mat-card class="settings-card">
+    <mat-card-header>
+      <mat-icon mat-card-avatar>cloud_upload</mat-icon>
+      <mat-card-title>上传设置</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="setting-item">
+        <div class="setting-info">
+          <span class="setting-label">默认复制格式</span>
+          <span class="setting-desc">上传成功后自动复制的链接格式</span>
+        </div>
+        <mat-form-field appearance="outline">
+          <mat-select [value]="settings.copyFormat" (selectionChange)="onCopyFormatChange($event.value)">
+            <mat-option value="url">直接链接</mat-option>
+            <mat-option value="markdown">Markdown</mat-option>
+            <mat-option value="html">HTML</mat-option>
+            <mat-option value="bbcode">BBCode</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <div class="setting-item">
+        <div class="setting-info">
+          <span class="setting-label">剪贴板自动上传</span>
+          <span class="setting-desc">粘贴图片时自动开始上传</span>
+        </div>
+        <mat-slide-toggle 
+          [checked]="settings.autoUploadClipboard" 
+          (change)="onAutoUploadClipboardChange($event.checked)"
+        >
+          {{ settings.autoUploadClipboard ? '开启' : '关闭' }}
+        </mat-slide-toggle>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- 行为设置 -->
+  <mat-card class="settings-card">
+    <mat-card-header>
+      <mat-icon mat-card-avatar>tune</mat-icon>
+      <mat-card-title>行为设置</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="setting-item">
+        <div class="setting-info">
+          <span class="setting-label">删除确认</span>
+          <span class="setting-desc">删除图片前显示确认对话框</span>
+        </div>
+        <mat-slide-toggle 
+          [checked]="settings.confirmDelete" 
+          (change)="onConfirmDeleteChange($event.checked)"
+        >
+          {{ settings.confirmDelete ? '开启' : '关闭' }}
+        </mat-slide-toggle>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- 账户信息 -->
+  <mat-card class="settings-card">
+    <mat-card-header>
+      <mat-icon mat-card-avatar>account_circle</mat-icon>
+      <mat-card-title>账户信息</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="account-info">
+        <div class="info-row">
+          <span class="info-label">用户名</span>
+          <span class="info-value">{{ username }}</span>
+        </div>
+        <div class="info-row" *ngIf="userRoles.length > 0">
+          <span class="info-label">角色</span>
+          <span class="info-value">
+            <mat-chip-listbox>
+              <mat-chip *ngFor="let role of userRoles">{{ role }}</mat-chip>
+            </mat-chip-listbox>
+          </span>
+        </div>
+      </div>
+      <div class="account-actions">
+        <button mat-stroked-button routerLink="/user/settings">
+          <mat-icon>settings</mat-icon>
+          修改密码
+        </button>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- 快捷操作 -->
+  <mat-card class="settings-card">
+    <mat-card-header>
+      <mat-icon mat-card-avatar>flash_on</mat-icon>
+      <mat-card-title>快捷操作</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="quick-actions">
+        <button mat-stroked-button routerLink="/settings/apikeys">
+          <mat-icon>key</mat-icon>
+          管理 API 密钥
+        </button>
+        <button mat-stroked-button routerLink="/settings/api-docs">
+          <mat-icon>description</mat-icon>
+          查看 API 文档
+        </button>
+        <button mat-stroked-button routerLink="/images">
+          <mat-icon>photo_library</mat-icon>
+          我的图片
+        </button>
+        <button mat-stroked-button routerLink="/albums">
+          <mat-icon>collections</mat-icon>
+          我的相册
+        </button>
+        <button mat-stroked-button color="warn" (click)="resetSettings()">
+          <mat-icon>restore</mat-icon>
+          重置设置
+        </button>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>

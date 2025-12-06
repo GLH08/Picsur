@@ -1,0 +1,70 @@
+:host {
+  display: block;
+  padding: 1rem 0;
+}
+
+mat-nav-list {
+  padding: 0;
+}
+
+[mat-subheader] {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--sidebar-subheader-color, rgba(255, 255, 255, 0.5));
+  padding: 1rem 1rem 0.5rem;
+  margin-top: 0.5rem;
+
+  &:first-child {
+    margin-top: 0;
+  }
+}
+
+a[mat-list-item] {
+  margin: 0.25rem 0.5rem;
+  border-radius: 8px;
+  transition: background 0.2s, color 0.2s;
+
+  &:hover {
+    background: var(--sidebar-hover-bg, rgba(255, 255, 255, 0.08));
+  }
+
+  &.active {
+    background: rgba(103, 58, 183, 0.2);
+    color: #7c4dff;
+
+    mat-icon {
+      color: #7c4dff;
+    }
+  }
+
+  mat-icon {
+    margin-right: 1rem;
+    color: var(--sidebar-icon-color, rgba(255, 255, 255, 0.7));
+    transition: color 0.2s;
+  }
+
+  span {
+    font-weight: 500;
+  }
+}
+
+mat-divider {
+  margin: 0.75rem 1rem;
+  opacity: 0.3;
+}
+
+// 深色主题变量（默认）
+:host-context(body:not(.theme-light)) {
+  --sidebar-subheader-color: rgba(255, 255, 255, 0.5);
+  --sidebar-hover-bg: rgba(255, 255, 255, 0.08);
+  --sidebar-icon-color: rgba(255, 255, 255, 0.7);
+}
+
+// 亮色主题变量
+:host-context(.theme-light) {
+  --sidebar-subheader-color: rgba(0, 0, 0, 0.54);
+  --sidebar-hover-bg: rgba(0, 0, 0, 0.04);
+  --sidebar-icon-color: rgba(0, 0, 0, 0.54);
+}

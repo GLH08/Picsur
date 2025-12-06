@@ -1,0 +1,273 @@
+<div class="picsur-images">
+  <mat-progress-spinner *ngIf="images === null"></mat-progress-spinner>
+
+  <h2 class="text-center" *ngIf="imagesSub.value !== null && totalCount <= 0">
+    没有可显示的图片
+  </h2>
+
+  <h2 class="text-center" *ngIf="imagesSub.value !== null && totalCount > 0 && filteredCount <= 0 && searchQuery">
+    没有找到匹配的图片
+  </h2>
+
+  <ng-container *ngIf="imagesSub.value !== null && totalCount > 0">
+    <div class="images-header">
+      <div class="header-left">
+        <h1>我的图片</h1>
+        <span class="image-count" *ngIf="!searchQuery">共 {{ totalCount }} 张</span>
+        <span class="image-count" *ngIf="searchQuery">找到 {{ filteredCount }} / {{ totalCount }} 张</span>
+      </div>
+      <div class="header-actions">
+        <button mat-icon-button (click)="toggleSearch()" [class.active]="searchActive">
+          <mat-icon>search</mat-icon>
+        </button>
+        <button mat-stroked-button (click)="toggleSelectionMode()">
+          <mat-icon>{{ selectionMode ? 'close' : 'check_box' }}</mat-icon>
+          {{ selectionMode ? '取消选择' : '选择' }}
+        </button>
+      </div>
+    </div>
+
+    <!-- 搜索框 -->
+    <div class="search-bar" *ngIf="searchActive">
+      <mat-form-field appearance="outline" class="search-field">
+        <mat-label>搜索图片</mat-label>
+        <input
+          matInput
+          [ngModel]="searchQuery"
+          (ngModelChange)="onSearchChange($event)"
+          placeholder="输入文件名或标签搜索..."
+          autofocus
+        />
+        <button mat-icon-button matSuffix *ngIf="searchQuery" (click)="clearSearch()">
+          <mat-icon>close</mat-icon>
+        </button>
+        <mat-icon matPrefix>search</mat-icon>
+      </mat-form-field>
+    </div>
+
+    <!-- 选择模式工具栏 -->
+    <div class="selection-toolbar" *ngIf="selectionMode">
+      <div class="selection-info">已选择 {{ selectedCount }} 张</div>
+      <div class="selection-actions">
+        <button mat-button (click)="selectAll()">全选</button>
+        <button mat-button (click)="deselectAll()">取消全选</button>
+        <button mat-stroked-button color="warn" (click)="deleteSelected()" [disabled]="selectedCount === 0">
+          <mat-icon>delete</mat-icon>
+          批量删除
+        </button>
+      </div>
+    </div>
+
+    <!-- 按时间分组展示 -->
+    <div class="image-groups">
+      <div class="image-group" *ngFor="let group of groupedImages">
+        <div class="group-header" (click)="toggleGroup(group)">
+          <mat-icon>{{ group.collapsed ? 'expand_more' : 'expand_less' }}</mat-icon>
+          <span class="group-title">{{ group.title }}</span>
+          <span class="group-count">{{ group.images.length }} 张</span>
+        </div>
+
+        <div class="image-grid" *ngIf="!group.collapsed" [style.--columns]="columns">
+          <div
+            class="image-item"
+            *ngFor="let image of group.images"
+            [class.selected]="isSelected(image)"
+            (click)="handleImageClick(image, $event)"
+            (contextmenu)="openContextMenu($event, image)"
+          >
+            <!-- 选择复选框（Ctrl/Shift 点击时也会显示） -->
+            <div 
+              class="select-checkbox" 
+              [class.visible]="selectionMode || isSelected(image)"
+              (click)="toggleSelect(image, $event)"
+            >
+              <mat-icon>{{ isSelected(image) ? 'check_box' : 'check_box_outline_blank' }}</mat-icon>
+            </div>
+
+            <div class="image-wrapper">
+              <img
+                [src]="getThumbnailUrl(image)"
+                [alt]="image.file_name || '图片'"
+                loading="lazy"
+                (error)="onImageError($event)"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <paginator [total-pages]="pages" [page]="page" (page)="gotoPage($event)"></paginator>
+  </ng-container>
+</div>
+
+<!-- 右键菜单 -->
+<div
+  class="picsur-context-menu"
+  *ngIf="contextMenuVisible"
+  [style.left.px]="contextMenuX"
+  [style.top.px]="contextMenuY"
+>
+  <button (click)="copyImageUrl()">
+    <mat-icon>link</mat-icon>
+    <span>复制图片链接</span>
+  </button>
+  <button (click)="copyMarkdownLink()">
+    <mat-icon>code</mat-icon>
+    <span>复制 Markdown</span>
+  </button>
+  <button (click)="copyHtmlLink()">
+    <mat-icon>html</mat-icon>
+    <span>复制 HTML</span>
+  </button>
+  <button (click)="copyBBCodeLink()">
+    <mat-icon>forum</mat-icon>
+    <span>复制 BBCode</span>
+  </button>
+  <mat-divider></mat-divider>
+  <button (click)="shareImage()">
+    <mat-icon>share</mat-icon>
+    <span>分享图片</span>
+  </button>
+  <button (click)="addToAlbum()">
+    <mat-icon>photo_library</mat-icon>
+    <span>添加到相册</span>
+  </button>
+  <mat-divider></mat-divider>
+  <button (click)="openInNewTab()">
+    <mat-icon>open_in_new</mat-icon>
+    <span>新窗口打开</span>
+  </button>
+  <button (click)="viewImageDetails()">
+    <mat-icon>info</mat-icon>
+    <span>查看详情</span>
+  </button>
+  <button (click)="manageTagFromMenu()">
+    <mat-icon>label</mat-icon>
+    <span>管理标签</span>
+  </button>
+  <mat-divider></mat-divider>
+  <button class="delete-item" (click)="deleteContextImage()">
+    <mat-icon>delete</mat-icon>
+    <span>删除图片</span>
+  </button>
+</div>
+
+<!-- 全屏图片查看器 -->
+<ng-container *ngIf="viewerOpen">
+  <div class="photo-viewer">
+    <!-- 背景遮罩 - 点击关闭 -->
+    <div class="photo-viewer-backdrop" (click)="closeViewer()"></div>
+
+    <!-- 图片容器 -->
+    <div class="photo-viewer-container" (wheel)="onViewerWheel($event)">
+      <img
+        *ngIf="viewerImage"
+        class="photo-viewer-image"
+        [src]="getFullImageUrl(viewerImage)"
+        [alt]="viewerImage.file_name || '图片'"
+        [style.transform]="'scale(' + viewerZoom / 100 + ')'"
+        draggable="false"
+      />
+    </div>
+
+    <!-- 左右切换按钮 -->
+    <button class="photo-viewer-nav photo-viewer-prev" (click)="viewerPrev()" title="上一张">
+      <mat-icon>chevron_left</mat-icon>
+    </button>
+    <button class="photo-viewer-nav photo-viewer-next" (click)="viewerNext()" title="下一张">
+      <mat-icon>chevron_right</mat-icon>
+    </button>
+
+    <!-- 底部信息栏 -->
+    <div class="photo-viewer-info">
+      <div class="photo-viewer-info-left">
+        <div class="photo-name" *ngIf="viewerImage?.file_name">{{ viewerImage?.file_name }}</div>
+        <div class="photo-meta">
+          {{ viewerIndex + 1 }} / {{ images?.length }} · {{ viewerImage?.created | date:'yyyy-MM-dd HH:mm' }}
+        </div>
+      </div>
+      <div class="photo-viewer-info-right">
+        <button class="zoom-btn" (click)="viewerZoomOut()" title="缩小 (-)">
+          <mat-icon>zoom_out</mat-icon>
+        </button>
+        <span class="zoom-level">{{ viewerZoom }}%</span>
+        <button class="zoom-btn" (click)="viewerZoomIn()" title="放大 (+)">
+          <mat-icon>zoom_in</mat-icon>
+        </button>
+        <button class="zoom-btn" (click)="viewerResetZoom()" title="重置 (0)">
+          <mat-icon>fit_screen</mat-icon>
+        </button>
+      </div>
+    </div>
+  </div>
+</ng-container>
+
+<!-- 标签管理侧边面板 -->
+<div class="picsur-tag-panel-overlay" *ngIf="tagPanelOpen" (click)="closeTagPanel()">
+  <div class="tag-panel" (click)="$event.stopPropagation()">
+    <div class="tag-panel-header">
+      <h3>
+        <mat-icon>label</mat-icon>
+        标签管理
+      </h3>
+      <button mat-icon-button (click)="closeTagPanel()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+    <div class="tag-panel-body" *ngIf="tagPanelImage">
+      <!-- 图片预览 -->
+      <div class="tag-panel-preview">
+        <img [src]="getThumbnailUrl(tagPanelImage)" [alt]="tagPanelImage.file_name || '图片'" />
+      </div>
+
+      <!-- 图片信息 -->
+      <div class="tag-panel-info">
+        <div class="info-row">
+          <mat-icon>fingerprint</mat-icon>
+          <span>ID: {{ tagPanelImage.id }}</span>
+        </div>
+        <div class="info-row">
+          <mat-icon>schedule</mat-icon>
+          <span>上传: {{ tagPanelImage.created | date:'yyyy-MM-dd HH:mm' }}</span>
+        </div>
+      </div>
+
+      <!-- 标签显示/编辑 -->
+      <div class="tag-panel-content">
+        <!-- 查看模式 -->
+        <div class="tag-view-mode" *ngIf="!tagEditMode">
+          <div class="current-tag" [class.has-tag]="hasTag(tagPanelImage)">
+            <mat-icon>{{ hasTag(tagPanelImage) ? 'label' : 'label_outline' }}</mat-icon>
+            <span *ngIf="hasTag(tagPanelImage)">{{ tagPanelImage.file_name }}</span>
+            <span *ngIf="!hasTag(tagPanelImage)" class="no-tag-text">暂无标签</span>
+          </div>
+          <div class="tag-actions">
+            <button mat-stroked-button color="primary" (click)="startTagEdit()">
+              <mat-icon>edit</mat-icon>
+              {{ hasTag(tagPanelImage) ? '编辑' : '添加' }}
+            </button>
+            <button mat-stroked-button color="warn" (click)="deleteTag()" *ngIf="hasTag(tagPanelImage)">
+              <mat-icon>delete</mat-icon>
+              删除
+            </button>
+          </div>
+        </div>
+
+        <!-- 编辑模式 -->
+        <div class="tag-edit-mode" *ngIf="tagEditMode">
+          <mat-form-field appearance="outline" class="tag-input">
+            <mat-label>标签内容</mat-label>
+            <input matInput [(ngModel)]="tagEditValue" placeholder="输入标签..." maxlength="100" autofocus />
+            <mat-hint>{{ tagEditValue.length }}/100</mat-hint>
+          </mat-form-field>
+          <div class="tag-edit-actions">
+            <button mat-button (click)="cancelTagEdit()">取消</button>
+            <button mat-raised-button color="primary" (click)="saveTag()">保存</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

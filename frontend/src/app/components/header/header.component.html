@@ -1,0 +1,98 @@
+<mat-toolbar>
+  <mat-progress-bar
+    *ngIf="loading"
+    class="loading-bar"
+    mode="indeterminate"
+    color="accent"
+  ></mat-progress-bar>
+
+  <button
+    *ngIf="_enableHamburger"
+    class="me-3"
+    mat-icon-button
+    (click)="onHamburgerClick.emit()"
+  >
+    <mat-icon>menu</mat-icon>
+  </button>
+
+  <a [routerLink]="['/']" class="logo text-link">
+    <div class="svg-logo">
+      <img src="/assets/branding/logo/picsur.svg" alt="Picsur Icon Logo" />
+    </div>
+    <div class="svg-logo-text">
+      <img
+        src="/assets/branding/text/picsur_light.svg"
+        class="ms-3 d-none d-sm-block"
+        alt="Picsur Text Logo"
+      />
+    </div>
+  </a>
+
+  <span class="spacer"></span>
+
+  <button
+    matTooltip="上传图片"
+    *ngIf="canUpload"
+    mat-icon-button
+    class="me-3"
+    (click)="doUpload()"
+  >
+    <mat-icon fontSet="material-icons-outlined">upload</mat-icon>
+  </button>
+
+  <button
+    [matTooltip]="themeTooltip"
+    mat-icon-button
+    class="me-3"
+    (click)="toggleTheme()"
+  >
+    <mat-icon fontSet="material-icons-outlined">{{ themeIcon }}</mat-icon>
+  </button>
+
+  <button
+    [matTooltip]="canRegister ? '登录或注册' : '登录到您的账户'"
+    *ngIf="!isLoggedIn && canLogIn"
+    mat-stroked-button
+    (click)="doLogin()"
+  >
+    登录
+  </button>
+
+  <!-- <span *ngIf="isLoggedIn" class="me-3 d-none d-sm-block">
+    {{ user?.username }}
+  </span> -->
+  <button
+    matTooltip="您的账户"
+    *ngIf="isLoggedIn"
+    mat-icon-button
+    [matMenuTriggerFor]="menu"
+  >
+    <mat-icon fontSet="material-icons-outlined">account_circle</mat-icon>
+  </button>
+
+  <mat-menu #menu="matMenu" xPosition="before">
+    <ng-template matMenuContent>
+      <span>
+        <div class="menu-username center-horizontally">
+          <h2 class="mat-typography">{{ user?.username }}</h2>
+        </div>
+      </span>
+      <button *ngIf="canUpload" mat-menu-item [routerLink]="['/images']">
+        <mat-icon fontSet="material-icons-outlined">image</mat-icon>
+        <span>我的图片</span>
+      </button>
+      <button *ngIf="canUpload" mat-menu-item [routerLink]="['/albums']">
+        <mat-icon fontSet="material-icons-outlined">photo_library</mat-icon>
+        <span>我的相册</span>
+      </button>
+      <button *ngIf="canAccessSettings" mat-menu-item (click)="doSettings()">
+        <mat-icon fontSet="material-icons-outlined">settings</mat-icon>
+        <span>设置</span>
+      </button>
+      <button mat-menu-item (click)="doLogout()">
+        <mat-icon fontSet="material-icons-outlined">logout</mat-icon>
+        <span>退出登录</span>
+      </button>
+    </ng-template>
+  </mat-menu>
+</mat-toolbar>

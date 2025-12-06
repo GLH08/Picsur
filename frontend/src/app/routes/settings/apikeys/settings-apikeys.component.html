@@ -1,0 +1,65 @@
+<h1>API密钥</h1>
+
+<div class="api-docs-hint">
+  <mat-icon>info</mat-icon>
+  <span>查看 <a routerLink="/settings/api-docs">API 使用文档</a> 了解如何使用 API 上传图片</span>
+</div>
+
+<mat-table [dataSource]="dataSubject" class="mat-elevation-z2">
+  <ng-container matColumnDef="name">
+    <mat-header-cell *matHeaderCellDef>名称</mat-header-cell>
+    <mat-cell *matCellDef="let apikey">
+      <app-settings-apikey-editor [value]="apikey.name"
+        (changed)="updateKeyName($event, apikey.id)"></app-settings-apikey-editor>
+    </mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="created">
+    <mat-header-cell class="d-none d-lg-flex" *matHeaderCellDef>
+      创建时间
+    </mat-header-cell>
+    <mat-cell class="d-none d-lg-flex" *matCellDef="let apikey">
+      {{ apikey.created | amTimeAgo }}
+    </mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="last_used">
+    <mat-header-cell class="d-none d-sm-flex" *matHeaderCellDef>
+      最后使用
+    </mat-header-cell>
+    <mat-cell class="d-none d-sm-flex" *matCellDef="let apikey">
+      {{ apikey.last_used === null ? '从未' : (apikey.last_used | amTimeAgo) }}
+    </mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="actions">
+    <mat-header-cell *matHeaderCellDef>操作</mat-header-cell>
+    <mat-cell *matCellDef="let apikey">
+      <button mat-icon-button (click)="copyKey(apikey.key)">
+        <mat-icon fontSet="material-icons-outlined" aria-label="复制密钥">
+          content_copy
+        </mat-icon>
+      </button>
+      <button mat-icon-button (click)="deleteApiKey(apikey.id)">
+        <mat-icon fontSet="material-icons-outlined" class="icon-red" aria-label="删除">
+          delete
+        </mat-icon>
+      </button>
+    </mat-cell>
+  </ng-container>
+
+  <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+  <mat-row *matRowDef="let row; columns: displayedColumns"> </mat-row>
+</mat-table>
+
+<mat-paginator class="mat-elevation-z2" [pageSizeOptions]="pageSizeOptions" [pageSize]="startingPageSize"
+  [showFirstLastButtons]="bootstrapService.isNotMobile() | async" [hidePageSize]="bootstrapService.isMobile() | async"
+  [length]="totalApiKeys" aria-label="选择API密钥页面" (page)="updateSubject.next($event)">
+</mat-paginator>
+
+<div class="fab-wrapper" style="position: fixed; bottom: 2rem; right: 2rem; z-index: 100;">
+  <button mat-fab color="primary" matTooltip="创建新的API密钥" matTooltipPosition="left" (click)="addApiKey()"
+    aria-label="添加API密钥">
+    <mat-icon fontSet="material-icons-outlined">add</mat-icon>
+  </button>
+</div>

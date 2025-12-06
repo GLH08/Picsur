@@ -1,0 +1,60 @@
+<div class="album-picker">
+  <div class="dialog-header">
+    <h2>添加到相册</h2>
+    <button mat-icon-button (click)="close()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <div class="dialog-content">
+    <p class="image-name" *ngIf="data.imageName">
+      <mat-icon>image</mat-icon>
+      {{ data.imageName }}
+    </p>
+
+    <!-- 创建新相册 -->
+    <div class="create-album" *ngIf="createMode">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>相册名称</mat-label>
+        <input matInput [(ngModel)]="newAlbumName" placeholder="输入新相册名称" maxlength="50" autofocus />
+      </mat-form-field>
+      <div class="create-actions">
+        <button mat-button (click)="cancelCreate()">取消</button>
+        <button mat-raised-button color="primary" (click)="createAndAdd()" [disabled]="!newAlbumName.trim()">
+          创建并添加
+        </button>
+      </div>
+    </div>
+
+    <!-- 相册列表 -->
+    <div class="album-list" *ngIf="!createMode">
+      <div class="album-item create-new" (click)="showCreateMode()">
+        <mat-icon class="album-icon">add</mat-icon>
+        <span class="album-name">创建新相册</span>
+      </div>
+
+      <div
+        class="album-item"
+        *ngFor="let album of albums"
+        [class.selected]="isInAlbum(album)"
+        (click)="toggleAlbum(album)"
+      >
+        <mat-icon class="album-icon">{{ isInAlbum(album) ? 'check_circle' : 'photo_library' }}</mat-icon>
+        <div class="album-info">
+          <span class="album-name">{{ album.name }}</span>
+          <span class="album-count">{{ getPhotoCount(album) }} 张图片</span>
+        </div>
+        <mat-icon class="check-icon" *ngIf="isInAlbum(album)">check</mat-icon>
+      </div>
+
+      <div class="empty-state" *ngIf="albums.length === 0">
+        <mat-icon>photo_library</mat-icon>
+        <p>还没有相册，点击上方创建</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="dialog-actions" *ngIf="!createMode">
+    <button mat-button (click)="close()">完成</button>
+  </div>
+</div>
