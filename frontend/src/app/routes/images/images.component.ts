@@ -44,9 +44,7 @@ const CONTEXT_MENU = {
   MARGIN: 10,
 } as const;
 
-const TIME_MS = {
-  DAY: 24 * 60 * 60 * 1000,
-} as const;
+
 
 @Component({
   templateUrl: './images.component.html',
@@ -112,51 +110,35 @@ export class ImagesComponent implements OnInit {
     const images = this.images;
     if (!images || images.length === 0) return [];
 
-    const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const yesterday = new Date(today.getTime() - TIME_MS.DAY);
-    const thisWeek = new Date(today.getTime() - 7 * TIME_MS.DAY);
-    const thisMonth = new Date(today.getTime() - 30 * TIME_MS.DAY);
-
-    const groups: { [key: string]: EImage[] } = {
-      today: [],
-      yesterday: [],
-      thisWeek: [],
-      thisMonth: [],
-      earlier: [],
-    };
+    // 按日期分组
+    const groups = new Map<string, EImage[]>();
 
     images.forEach((image: EImage) => {
       const created = new Date(image.created);
-      if (created >= today) {
-        groups['today'].push(image);
-      } else if (created >= yesterday) {
-        groups['yesterday'].push(image);
-      } else if (created >= thisWeek) {
-        groups['thisWeek'].push(image);
-      } else if (created >= thisMonth) {
-        groups['thisMonth'].push(image);
-      } else {
-        groups['earlier'].push(image);
+      // 生成日期 key: YYYY-MM-DD
+      const dateKey = `${created.getFullYear()}-${String(created.getMonth() + 1).padStart(2, '0')}-${String(created.getDate()).padStart(2, '0')}`;
+      
+      if (!groups.has(dateKey)) {
+        groups.set(dateKey, []);
       }
+      groups.get(dateKey)!.push(image);
     });
 
+    // 转换为数组并按日期降序排序
     const result: ImageGroup[] = [];
-    if (groups['today'].length > 0) {
-      result.push({ title: '今天', images: groups['today'], collapsed: false });
-    }
-    if (groups['yesterday'].length > 0) {
-      result.push({ title: '昨天', images: groups['yesterday'], collapsed: false });
-    }
-    if (groups['thisWeek'].length > 0) {
-      result.push({ title: '本周', images: groups['thisWeek'], collapsed: false });
-    }
-    if (groups['thisMonth'].length > 0) {
-      result.push({ title: '本月', images: groups['thisMonth'], collapsed: false });
-    }
-    if (groups['earlier'].length > 0) {
-      result.push({ title: '更早', images: groups['earlier'], collapsed: false });
-    }
+    const sortedKeys = Array.from(groups.keys()).sort((a, b) => b.localeCompare(a));
+
+    sortedKeys.forEach((dateKey) => {
+      // 格式化为 "YYYY/MM/DD"
+      const [year, month, day] = dateKey.split('-');
+      const title = `${year}/${month}/${day}`;
+      
+      result.push({
+        title,
+        images: groups.get(dateKey)!,
+        collapsed: false,
+      });
+    });
 
     return result;
   }
