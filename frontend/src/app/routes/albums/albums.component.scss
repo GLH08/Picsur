@@ -9,6 +9,8 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
   
   .header-left {
     display: flex;
@@ -24,6 +26,20 @@
     .album-count {
       color: rgba(255, 255, 255, 0.6);
       font-size: 0.9rem;
+    }
+  }
+  
+  // 修复按钮内图标和文字对齐
+  button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    
+    mat-icon {
+      margin: 0;
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
     }
   }
 }
@@ -192,7 +208,7 @@
   text-align: center;
   padding: 4rem 2rem;
   
-  mat-icon {
+  > mat-icon {
     font-size: 64px;
     width: 64px;
     height: 64px;
@@ -208,6 +224,20 @@
   p {
     margin: 0 0 2rem 0;
     color: rgba(0, 0, 0, 0.5);
+  }
+  
+  // 修复按钮内图标和文字对齐
+  button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    
+    mat-icon {
+      margin: 0;
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
   }
 }
 
