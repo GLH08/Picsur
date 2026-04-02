@@ -8,9 +8,10 @@ export class AuthConfigService {
   constructor(private readonly configService: ConfigService) {}
 
   public getDefaultAdminPassword(): string {
-    return ParseString(
-      this.configService.get(`${EnvPrefix}ADMIN_PASSWORD`),
-      'picsur',
-    );
+    const password = this.configService.get(`${EnvPrefix}ADMIN_PASSWORD`);
+    if (!password) {
+      throw new Error('ADMIN_PASSWORD environment variable is required');
+    }
+    return ParseString(password, '');
   }
 }

@@ -63,7 +63,7 @@
     "sharp": "^0.33.5",
     "stream-parser": "^0.3.1",
     "thunks": "^4.9.6",
-    "typeorm": "^0.3.20",
+    "typeorm": "^0.3.28",
     "zod": "^3.23.8"
   },
   "devDependencies": {

@@ -55,7 +55,6 @@ export class V060B1743600000001 implements MigrationInterface {
     const newCount = await queryRunner.query(`
       SELECT COUNT(*) as count FROM e_album_image_backend
     `);
-    console.log(`Migration complete: ${newCount[0].count} album-image relations created`);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {

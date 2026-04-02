@@ -7,4 +7,4 @@ import { AlphaNumericRegex } from '../util/common-regex.js';
 export const IsUsername = () =>
   z.string().min(4).max(32).regex(AlphaNumericRegex);
 
-export const IsPlainTextPwd = () => z.string().min(4).max(1024);
+export const IsPlainTextPwd = () => z.string().min(8).max(1024);
