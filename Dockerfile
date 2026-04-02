@@ -18,6 +18,9 @@ WORKDIR /app
 COPY package.json pnpm-lock.yaml ./
 COPY pnpm-workspace.yaml ./
 
+# 复制 patches 目录（qoi-img patch 需要）
+COPY patches/ ./patches/
+
 # 安装pnpm
 RUN npm install -g pnpm
 
