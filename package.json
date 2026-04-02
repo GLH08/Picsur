@@ -18,6 +18,9 @@
   "pnpm": {
     "overrides": {
       "typescript": "~5.5.4"
+    },
+    "patchedDependencies": {
+      "qoi-img@2.2.0": "patches/qoi-img@2.2.0.patch"
     }
   },
   "devDependencies": {

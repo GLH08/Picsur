@@ -1,0 +1,13 @@
+diff --git a/lib/qoi.cpp b/lib/qoi.cpp
+index 3698724beba378f40cd36be646eff20fe25015aa..9edf0391fb08a64aa7e16b3b1003933ad0124db2 100644
+--- a/lib/qoi.cpp
++++ b/lib/qoi.cpp
+@@ -17,7 +17,7 @@
+ 
+ namespace qoi_node
+ {
+-  static void finalize_data(const napi_env__* env, void *data, void *hint)
++  static void finalize_data(napi_env__* env, void *data, void *hint)
+   {
+     free(data);
+   }
