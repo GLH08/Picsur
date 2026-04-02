@@ -50,9 +50,20 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
 
   public createTypeOrmOptions() {
     const varOptions = this.getTypeOrmServerOptions();
+    const synchronize = !this.hostService.isProduction() || ParseBool(this.configService.get(`${EnvPrefix}SYNCHRONIZE`), false);
+
+    if (synchronize) {
+      this.logger.warn('===========================================');
+      this.logger.warn('WARNING: TypeORM synchronize is ENABLED');
+      this.logger.warn('This will automatically modify database schema');
+      this.logger.warn('DO NOT use in production environments!');
+      this.logger.warn('Set PICSUR_SYNCHRONIZE=false to disable');
+      this.logger.warn('===========================================');
+    }
+
     return {
       type: 'postgres' as const,
-      synchronize: !this.hostService.isProduction() || ParseBool(this.configService.get(`${EnvPrefix}SYNCHRONIZE`), false),
+      synchronize,
 
       migrationsRun: true,
 

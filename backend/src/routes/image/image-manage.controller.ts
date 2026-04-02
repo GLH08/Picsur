@@ -93,7 +93,7 @@ export class ImageManageController {
     }
 
     const found = ThrowIfFailed(
-      await this.imagesService.findMany(body.count, body.page, body.user_id),
+      await this.imagesService.findMany(body.count, body.page, body.user_id, body.type),
     );
 
     return found;

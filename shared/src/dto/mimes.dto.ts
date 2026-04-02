@@ -21,18 +21,30 @@ export enum AnimFileType {
   //APNG = 'anim:apng',
 }
 
+export enum VideoFileType {
+  MP4 = 'video:mp4',
+  WEBM = 'video:webm',
+  MOV = 'video:mov',
+  AVI = 'video:avi',
+  MKV = 'video:mkv',
+  OGV = 'video:ogv',
+}
+
 // Derivatives
 
 export const SupportedImageFileTypes: string[] = Object.values(ImageFileType);
 export const SupportedAnimFileTypes: string[] = Object.values(AnimFileType);
+export const SupportedVideoFileTypes: string[] = Object.values(VideoFileType);
 export const SupportedFileTypes: string[] = Object.values({
   ...ImageFileType,
   ...AnimFileType,
+  ...VideoFileType,
 });
 
 export enum SupportedFileTypeCategory {
   Image = 'image',
   Animation = 'anim',
+  Video = 'video',
 }
 
 export interface FileType {
@@ -45,7 +57,7 @@ export interface FileType {
 // -- Mime
 
 const FileType2MimeMap: {
-  [key in ImageFileType | AnimFileType]: string;
+  [key in ImageFileType | AnimFileType | VideoFileType]: string;
 } = {
   [AnimFileType.GIF]: 'image/gif',
   [AnimFileType.WEBP]: 'image/webp',
@@ -61,6 +73,12 @@ const FileType2MimeMap: {
   [ImageFileType.JP2]: 'image/jp2',
   [ImageFileType.BMP]: 'image/bmp',
   // [ImageFileType.ICO]: 'image/x-icon',
+  [VideoFileType.MP4]: 'video/mp4',
+  [VideoFileType.WEBM]: 'video/webm',
+  [VideoFileType.MOV]: 'video/quicktime',
+  [VideoFileType.AVI]: 'video/x-msvideo',
+  [VideoFileType.MKV]: 'video/x-matroska',
+  [VideoFileType.OGV]: 'video/ogg',
 };
 
 export const Mime2FileType = (mime: string): Failable<string> => {
@@ -72,7 +90,7 @@ export const Mime2FileType = (mime: string): Failable<string> => {
   return entries[0][0];
 };
 export const FileType2Mime = (filetype: string): Failable<string> => {
-  const result = FileType2MimeMap[filetype as ImageFileType | AnimFileType];
+  const result = FileType2MimeMap[filetype as ImageFileType | AnimFileType | VideoFileType];
   if (result === undefined)
     return Fail(FT.Internal, undefined, `Unsupported filetype: ${filetype}`);
   return result;
@@ -81,7 +99,7 @@ export const FileType2Mime = (filetype: string): Failable<string> => {
 // -- Ext
 
 const FileType2ExtMap: {
-  [key in ImageFileType | AnimFileType]: string;
+  [key in ImageFileType | AnimFileType | VideoFileType]: string;
 } = {
   [AnimFileType.GIF]: 'gif',
   [AnimFileType.WEBP]: 'webp',
@@ -97,6 +115,12 @@ const FileType2ExtMap: {
   [ImageFileType.JP2]: 'jp2',
   [ImageFileType.BMP]: 'bmp',
   // [ImageFileType.ICO]: 'ico',
+  [VideoFileType.MP4]: 'mp4',
+  [VideoFileType.WEBM]: 'webm',
+  [VideoFileType.MOV]: 'mov',
+  [VideoFileType.AVI]: 'avi',
+  [VideoFileType.MKV]: 'mkv',
+  [VideoFileType.OGV]: 'ogv',
 };
 
 export const Ext2FileType = (ext: string): Failable<string> => {
@@ -107,7 +131,7 @@ export const Ext2FileType = (ext: string): Failable<string> => {
 };
 
 export const FileType2Ext = (mime: string): Failable<string> => {
-  const result = FileType2ExtMap[mime as ImageFileType | AnimFileType];
+  const result = FileType2ExtMap[mime as ImageFileType | AnimFileType | VideoFileType];
   if (result === undefined)
     return Fail(FT.Internal, undefined, `Unsupported mime type: ${mime}`);
   return result;

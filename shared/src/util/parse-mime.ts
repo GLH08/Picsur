@@ -5,6 +5,7 @@ import {
   SupportedAnimFileTypes,
   SupportedFileTypeCategory,
   SupportedImageFileTypes,
+  SupportedVideoFileTypes,
 } from '../dto/mimes.dto.js';
 import { Fail, Failable, FT, HasFailed } from '../types/failable.js';
 
@@ -16,6 +17,12 @@ export function ParseFileType(filetype: string): Failable<FileType> {
     return {
       identifier: filetype,
       category: SupportedFileTypeCategory.Animation,
+    };
+
+  if (SupportedVideoFileTypes.includes(filetype))
+    return {
+      identifier: filetype,
+      category: SupportedFileTypeCategory.Video,
     };
 
   return Fail(FT.UsrValidation, 'Unsupported file type');

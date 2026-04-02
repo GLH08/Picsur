@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<coverage generated="1775030701168" clover="3.2.0">
+  <project timestamp="1775030701168" name="All files">
+    <metrics statements="144" coveredstatements="85" conditionals="83" coveredconditionals="37" methods="34" coveredmethods="13" elements="261" coveredelements="135" complexity="0" loc="144" ncloc="144" packages="3" files="3" classes="3"/>
+    <package name="dto">
+      <metrics statements="52" coveredstatements="43" conditionals="16" coveredconditionals="12" methods="10" coveredmethods="6"/>
+      <file name="mimes.dto.ts" path="D:\Files\Code\Picsur\shared\src\dto\mimes.dto.ts">
+        <metrics statements="52" coveredstatements="43" conditionals="16" coveredconditionals="12" methods="10" coveredmethods="6"/>
+        <line num="4" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="5" count="2" type="stmt"/>
+        <line num="6" count="2" type="stmt"/>
+        <line num="7" count="2" type="stmt"/>
+        <line num="8" count="2" type="stmt"/>
+        <line num="9" count="2" type="stmt"/>
+        <line num="10" count="2" type="stmt"/>
+        <line num="11" count="2" type="stmt"/>
+        <line num="12" count="2" type="stmt"/>
+        <line num="13" count="2" type="stmt"/>
+        <line num="14" count="2" type="stmt"/>
+        <line num="18" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="19" count="2" type="stmt"/>
+        <line num="20" count="2" type="stmt"/>
+        <line num="24" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="25" count="2" type="stmt"/>
+        <line num="26" count="2" type="stmt"/>
+        <line num="27" count="2" type="stmt"/>
+        <line num="28" count="2" type="stmt"/>
+        <line num="29" count="2" type="stmt"/>
+        <line num="30" count="2" type="stmt"/>
+        <line num="35" count="2" type="stmt"/>
+        <line num="36" count="2" type="stmt"/>
+        <line num="37" count="2" type="stmt"/>
+        <line num="38" count="2" type="stmt"/>
+        <line num="44" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="45" count="2" type="stmt"/>
+        <line num="46" count="2" type="stmt"/>
+        <line num="47" count="2" type="stmt"/>
+        <line num="61" count="2" type="stmt"/>
+        <line num="84" count="2" type="stmt"/>
+        <line num="85" count="0" type="stmt"/>
+        <line num="86" count="0" type="stmt"/>
+        <line num="88" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="89" count="0" type="stmt"/>
+        <line num="90" count="0" type="stmt"/>
+        <line num="92" count="2" type="stmt"/>
+        <line num="93" count="7" type="stmt"/>
+        <line num="94" count="7" type="cond" truecount="2" falsecount="0"/>
+        <line num="95" count="1" type="stmt"/>
+        <line num="96" count="6" type="stmt"/>
+        <line num="103" count="2" type="stmt"/>
+        <line num="126" count="2" type="stmt"/>
+        <line num="127" count="0" type="stmt"/>
+        <line num="128" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="129" count="0" type="stmt"/>
+        <line num="130" count="0" type="stmt"/>
+        <line num="133" count="2" type="stmt"/>
+        <line num="134" count="7" type="stmt"/>
+        <line num="135" count="7" type="cond" truecount="2" falsecount="0"/>
+        <line num="136" count="1" type="stmt"/>
+        <line num="137" count="6" type="stmt"/>
+      </file>
+    </package>
+    <package name="types">
+      <metrics statements="79" coveredstatements="35" conditionals="57" coveredconditionals="19" methods="21" coveredmethods="6"/>
+      <file name="failable.ts" path="D:\Files\Code\Picsur\shared\src\types\failable.ts">
+        <metrics statements="79" coveredstatements="35" conditionals="57" coveredconditionals="19" methods="21" coveredmethods="6"/>
+        <line num="7" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="8" count="2" type="stmt"/>
+        <line num="9" count="2" type="stmt"/>
+        <line num="10" count="2" type="stmt"/>
+        <line num="11" count="2" type="stmt"/>
+        <line num="12" count="2" type="stmt"/>
+        <line num="13" count="2" type="stmt"/>
+        <line num="14" count="2" type="stmt"/>
+        <line num="15" count="2" type="stmt"/>
+        <line num="16" count="2" type="stmt"/>
+        <line num="17" count="2" type="stmt"/>
+        <line num="18" count="2" type="stmt"/>
+        <line num="19" count="2" type="stmt"/>
+        <line num="20" count="2" type="stmt"/>
+        <line num="21" count="2" type="stmt"/>
+        <line num="38" count="2" type="stmt"/>
+        <line num="112" count="5" type="stmt"/>
+        <line num="115" count="5" type="cond" truecount="0" falsecount="1"/>
+        <line num="116" count="5" type="stmt"/>
+        <line num="117" count="5" type="stmt"/>
+        <line num="118" count="5" type="stmt"/>
+        <line num="122" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="126" count="0" type="stmt"/>
+        <line num="130" count="0" type="stmt"/>
+        <line num="134" count="0" type="stmt"/>
+        <line num="139" count="0" type="stmt"/>
+        <line num="140" count="0" type="stmt"/>
+        <line num="144" count="0" type="stmt"/>
+        <line num="148" count="0" type="stmt"/>
+        <line num="158" count="0" type="stmt"/>
+        <line num="160" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="162" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="163" count="0" type="stmt"/>
+        <line num="165" count="0" type="cond" truecount="0" falsecount="4"/>
+        <line num="166" count="0" type="stmt"/>
+        <line num="167" count="0" type="stmt"/>
+        <line num="168" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="169" count="0" type="stmt"/>
+        <line num="172" count="0" type="stmt"/>
+        <line num="177" count="0" type="stmt"/>
+        <line num="184" count="0" type="stmt"/>
+        <line num="185" count="0" type="stmt"/>
+        <line num="186" count="0" type="stmt"/>
+        <line num="190" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="191" count="0" type="stmt"/>
+        <line num="194" count="0" type="stmt"/>
+        <line num="199" count="5" type="cond" truecount="3" falsecount="1"/>
+        <line num="200" count="0" type="stmt"/>
+        <line num="203" count="5" type="cond" truecount="4" falsecount="0"/>
+        <line num="204" count="3" type="cond" truecount="3" falsecount="1"/>
+        <line num="206" count="0" type="stmt"/>
+        <line num="212" count="3" type="cond" truecount="1" falsecount="1"/>
+        <line num="214" count="3" type="stmt"/>
+        <line num="220" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="223" count="0" type="stmt"/>
+        <line num="231" count="0" type="stmt"/>
+        <line num="240" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="242" count="2" type="cond" truecount="1" falsecount="1"/>
+        <line num="243" count="2" type="stmt"/>
+        <line num="249" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="250" count="0" type="stmt"/>
+        <line num="252" count="0" type="stmt"/>
+        <line num="263" count="10" type="stmt"/>
+        <line num="271" count="5" type="cond" truecount="1" falsecount="1"/>
+        <line num="272" count="5" type="cond" truecount="1" falsecount="1"/>
+        <line num="273" count="5" type="stmt"/>
+        <line num="277" count="46" type="cond" truecount="1" falsecount="1"/>
+        <line num="278" count="46" type="stmt"/>
+        <line num="282" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="283" count="0" type="stmt"/>
+        <line num="286" count="0" type="stmt"/>
+        <line num="294" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="295" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="296" count="0" type="stmt"/>
+        <line num="299" count="0" type="stmt"/>
+        <line num="306" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="307" count="0" type="stmt"/>
+        <line num="314" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="315" count="0" type="stmt"/>
+      </file>
+    </package>
+    <package name="util">
+      <metrics statements="13" coveredstatements="7" conditionals="10" coveredconditionals="6" methods="3" coveredmethods="1"/>
+      <file name="parse-mime.ts" path="D:\Files\Code\Picsur\shared\src\util\parse-mime.ts">
+        <metrics statements="13" coveredstatements="7" conditionals="10" coveredconditionals="6" methods="3" coveredmethods="1"/>
+        <line num="13" count="14" type="cond" truecount="2" falsecount="0"/>
+        <line num="14" count="3" type="stmt"/>
+        <line num="16" count="11" type="cond" truecount="2" falsecount="0"/>
+        <line num="17" count="2" type="stmt"/>
+        <line num="22" count="9" type="cond" truecount="2" falsecount="0"/>
+        <line num="23" count="6" type="stmt"/>
+        <line num="28" count="3" type="stmt"/>
+        <line num="32" count="0" type="stmt"/>
+        <line num="33" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="34" count="0" type="stmt"/>
+        <line num="38" count="0" type="stmt"/>
+        <line num="39" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="40" count="0" type="stmt"/>
+      </file>
+    </package>
+  </project>
+</coverage>

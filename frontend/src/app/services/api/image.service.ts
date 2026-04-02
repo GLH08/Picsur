@@ -13,7 +13,10 @@ import {
   ImageRequestParams,
 } from 'picsur-shared/dist/dto/api/image.dto';
 import { ImageLinks } from 'picsur-shared/dist/dto/image-links.class';
-import { FileType2Ext } from 'picsur-shared/dist/dto/mimes.dto';
+import {
+  FileType2Ext,
+  SupportedVideoFileTypes,
+} from 'picsur-shared/dist/dto/mimes.dto';
 import { EImage } from 'picsur-shared/dist/entities/image.entity';
 import {
   AsyncFailable,
@@ -111,6 +114,7 @@ export class ImageService {
     count: number,
     page: number,
     userID?: string,
+    type: 'all' | 'image' | 'video' = 'all',
   ): AsyncFailable<ImageListResponse> {
     return await this.api.post(
       ImageListRequest,
@@ -120,6 +124,7 @@ export class ImageService {
         count,
         page,
         user_id: userID,
+        type,
       },
     ).result;
   }
@@ -127,13 +132,28 @@ export class ImageService {
   public async ListMyImages(
     count: number,
     page: number,
+    type: 'all' | 'image' | 'video' = 'all',
   ): AsyncFailable<ImageListResponse> {
     const userID = await this.userService.snapshot?.id;
     if (userID === undefined) {
       return Fail(FT.Authentication, 'User not logged in');
     }
 
-    return await this.ListAllImages(count, page, userID);
+    return await this.ListAllImages(count, page, userID, type);
+  }
+
+  public async ListMyVideos(
+    count: number,
+    page: number,
+  ): AsyncFailable<ImageListResponse> {
+    return this.ListMyImages(count, page, 'video');
+  }
+
+  public async ListMyImagesOnly(
+    count: number,
+    page: number,
+  ): AsyncFailable<ImageListResponse> {
+    return this.ListMyImages(count, page, 'image');
   }
 
   public async UpdateImage(
@@ -180,6 +200,10 @@ export class ImageService {
 
   // Non api calls
 
+  public getHostname(allowOverride = false): string {
+    return this.infoService.getHostname(allowOverride);
+  }
+
   // Use for native images
   public GetImageURL(
     image: string,
@@ -207,7 +231,16 @@ export class ImageService {
   }
 
   // Use for user facing urls
-  public CreateImageLinks(imageURL: string, name?: string): ImageLinks {
+  public CreateImageLinks(imageURL: string, name?: string, isVideo = false): ImageLinks {
+    if (isVideo) {
+      return {
+        source: imageURL,
+        markdown: `![video](${imageURL})`,
+        html: `<video src="${imageURL}" controls><source src="${imageURL}" type="video/mp4">您的浏览器不支持视频播放</video>`,
+        rst: `.. image:: ${imageURL}`,
+        bbcode: `[video]${imageURL}[/video]`,
+      };
+    }
     return {
       source: imageURL,
       markdown: `![image](${imageURL})`,
@@ -259,7 +292,9 @@ export class ImageService {
     name?: string,
     date?: Date | string,
   ): ImageLinks {
-    return this.CreateImageLinks(this.GetImageURL(imageID, mime, true, date), name);
+    const url = this.GetImageURL(imageID, mime, true, date);
+    const isVideo = mime !== null && SupportedVideoFileTypes.includes(mime);
+    return this.CreateImageLinks(url, name, isVideo);
   }
 
   private chunks<T>(arr: T[], size: number): T[][] {

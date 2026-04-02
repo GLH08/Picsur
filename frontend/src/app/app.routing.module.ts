@@ -39,6 +39,11 @@ const routes: PRoutes = [
       import('./routes/albums/albums.module').then((m) => m.default),
   },
   {
+    path: 'videos',
+    loadChildren: () =>
+      import('./routes/videos/videos.module').then((m) => m.default),
+  },
+  {
     path: 'settings',
     loadChildren: () =>
       import('./routes/settings/settings.module').then((m) => m.default),

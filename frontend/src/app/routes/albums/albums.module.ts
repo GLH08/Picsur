@@ -9,6 +9,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { DialogManagerModule } from '../../util/dialog-manager/dialog-manager.module';
 import { ErrorManagerModule } from '../../util/error-manager/error-manager.module';
+import { AlbumService } from '../../services/api/album.service';
 import { AlbumsComponent } from './albums.component';
 import { AlbumDetailComponent } from './album-detail/album-detail.component';
 import { AlbumsRoutingModule } from './albums.routing.module';
@@ -28,5 +29,6 @@ import { AlbumsRoutingModule } from './albums.routing.module';
     MatInputModule,
     MatProgressBarModule,
   ],
+  providers: [AlbumService],
 })
 export default class AlbumsModule {}

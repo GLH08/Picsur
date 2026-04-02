@@ -16,8 +16,10 @@
         [value]="totalProgress"
         color="primary"
       ></mat-progress-bar>
-      <div class="progress-stats" *ngIf="isUploading && currentSpeed > 0">
-        <span>速度: {{ formatSpd(currentSpeed) }}</span>
+      <div class="progress-stats" *ngIf="isUploading && smoothSpeed > 0">
+        <span>速度: {{ formatSpd(smoothSpeed) }}
+          <span class="confidence" *ngIf="speedConfidence < 1" title="置信度">({{ (speedConfidence * 100) | number:'1.0-0' }}%)</span>
+        </span>
         <span>预计剩余: {{ formatEta(estimatedTime) }}</span>
       </div>
     </div>

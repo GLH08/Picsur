@@ -16,7 +16,23 @@
     </div>
 
     <div class="col-12 py-3">
-      <picsur-img class="uploadedimage" [src]="previewLink"></picsur-img>
+      <!-- Video player -->
+      <video
+        *ngIf="isVideo"
+        class="uploadedmedia"
+        [src]="videoLink"
+        controls
+        autoplay
+        playsinline
+      >
+        您的浏览器不支持视频播放
+      </video>
+      <!-- Image display -->
+      <picsur-img
+        *ngIf="!isVideo"
+        class="uploadedimage"
+        [src]="previewLink"
+      ></picsur-img>
     </div>
 
     <div class="col-md-6 col-12">

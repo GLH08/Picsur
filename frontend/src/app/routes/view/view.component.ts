@@ -12,6 +12,7 @@ import {
   AnimFileType,
   ImageFileType,
   SupportedFileTypeCategory,
+  SupportedVideoFileTypes,
 } from 'picsur-shared/dist/dto/mimes.dto';
 import { EImage } from 'picsur-shared/dist/entities/image.entity';
 import { EUser } from 'picsur-shared/dist/entities/user.entity';
@@ -84,6 +85,17 @@ export class ViewComponent implements OnInit, OnDestroy {
       this.imageService.GetImageURL(this.id, this.metadata.fileTypes.master, false, this.image?.created) +
       (width > 1 ? `?width=${width}&shrinkonly=yes` : '')
     );
+  }
+
+  public get isVideo(): boolean {
+    if (this.metadata === null) return false;
+    const masterFiletype = this.metadata.fileTypes.master;
+    return SupportedVideoFileTypes.includes(masterFiletype);
+  }
+
+  public get videoLink(): string {
+    if (this.metadata === null) return '';
+    return this.imageService.GetImageURL(this.id, this.metadata.fileTypes.master, false, this.image?.created);
   }
 
   private imageLinksCache: Record<string, ImageLinks> = {};
@@ -168,7 +180,10 @@ export class ViewComponent implements OnInit, OnDestroy {
       });
     }
 
-    newOptions = newOptions.concat(this.utilService.getBaseFormatOptions());
+    // Videos don't have format conversion options
+    if (!this.isVideo) {
+      newOptions = newOptions.concat(this.utilService.getBaseFormatOptions());
+    }
 
     this.formatOptions = newOptions;
   }

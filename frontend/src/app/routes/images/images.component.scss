@@ -114,6 +114,19 @@
         color: rgba(255,255,255,.3);
         font-size: 48px;
       }
+      .video-placeholder {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,.2);
+        color: rgba(255,255,255,.5);
+        gap: .5rem;
+        mat-icon { font-size: 48px; width: 48px; height: 48px; }
+        span { font-size: .75rem; font-weight: 500; }
+      }
     }
   }
 }

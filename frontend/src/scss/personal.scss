@@ -71,8 +71,16 @@
   transition: ease-in-out all 0.2s !important;
 }
 
+// 主题切换动画
+.theme-transition,
+.theme-transition * {
+  transition: background-color 0.3s ease,
+              color 0.3s ease,
+              border-color 0.3s ease,
+              box-shadow 0.3s ease !important;
+}
 
-// 主题相关样式 - 深色主题（默认）
+// 应用到全局的主题变量变化
 :root,
 body:not(.theme-light) {
   --bg-primary: #121212;
@@ -88,6 +96,14 @@ body:not(.theme-light) {
   --sidebar-subheader-color: rgba(255, 255, 255, 0.5);
   --sidebar-hover-bg: rgba(255, 255, 255, 0.08);
   --sidebar-icon-color: rgba(255, 255, 255, 0.7);
+}
+
+.theme-transition,
+.theme-transition * {
+  transition: background-color 0.3s ease,
+              color 0.3s ease,
+              border-color 0.3s ease,
+              box-shadow 0.3s ease !important;
 }
 
 // 亮色主题

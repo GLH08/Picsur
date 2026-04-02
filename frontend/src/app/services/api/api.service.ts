@@ -1,5 +1,4 @@
-import { Inject, Injectable } from '@angular/core';
-import { WINDOW } from '@ng-web-apis/common';
+import { Injectable } from '@angular/core';
 import axios, {
   AxiosRequestConfig,
   AxiosResponse,
@@ -75,7 +74,6 @@ export class ApiService {
 
   constructor(
     private readonly keyService: KeyStorageService,
-    @Inject(WINDOW) private readonly windowRef: Window,
   ) {}
 
   public get<T extends z.AnyZodObject>(
@@ -119,6 +117,31 @@ export class ApiService {
     url: string,
   ): RunningRequest<z.infer<T>> {
     return this.fetchSafeJson(type, url, { method: 'POST' });
+  }
+
+  public put<T extends z.AnyZodObject, W extends z.AnyZodObject>(
+    sendType: ZodDtoStatic<T>,
+    receiveType: ZodDtoStatic<W>,
+    url: string,
+    data: z.infer<T>,
+  ): RunningRequest<z.infer<W>> {
+    const sendSchema = sendType.zodSchema;
+
+    const validateResult = sendSchema.safeParse(data);
+    if (!validateResult.success) {
+      return CreateFailedRunningRequest(
+        Fail(FT.SysValidation, 'Something went wrong', validateResult.error),
+      );
+    }
+
+    return this.fetchSafeJson(receiveType, url, {
+      method: 'PUT',
+      data: validateResult.data,
+    });
+  }
+
+  public delete(url: string): RunningRequest<true> {
+    return this.fetchDelete(url, { method: 'DELETE' });
   }
 
   public postForm<T extends z.AnyZodObject>(
@@ -213,6 +236,20 @@ export class ApiService {
 
     return MapRunningRequest(response, async (r) => {
       return r.headers as AxiosResponseHeaders;
+    });
+  }
+
+  private fetchDelete(
+    url: string,
+    options: AxiosRequestConfig,
+  ): RunningRequest<true> {
+    const response = this.fetch(url, {
+      ...options,
+      responseType: 'json',
+    });
+
+    return MapRunningRequest(response, async () => {
+      return true as const;
     });
   }
 

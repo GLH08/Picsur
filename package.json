@@ -11,7 +11,9 @@
     "purge": "rm -rf ./node_modules",
     "purge-all": "./support/purge-all.sh",
     "format": "prettier --write .",
-    "lint": "eslint --fix ."
+    "lint": "eslint --fix .",
+    "test": "pnpm --filter picsur-shared test",
+    "test:coverage": "pnpm --filter picsur-shared test:coverage"
   },
   "pnpm": {
     "overrides": {

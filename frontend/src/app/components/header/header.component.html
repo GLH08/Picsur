@@ -81,6 +81,10 @@
         <mat-icon fontSet="material-icons-outlined">image</mat-icon>
         <span>我的图片</span>
       </button>
+      <button *ngIf="canUpload" mat-menu-item [routerLink]="['/videos']">
+        <mat-icon fontSet="material-icons-outlined">videocam</mat-icon>
+        <span>我的视频</span>
+      </button>
       <button *ngIf="canUpload" mat-menu-item [routerLink]="['/albums']">
         <mat-icon fontSet="material-icons-outlined">photo_library</mat-icon>
         <span>我的相册</span>

@@ -1,5 +1,6 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { SupportedVideoFileTypes } from 'picsur-shared/dist/dto/mimes.dto';
 import { EImage } from 'picsur-shared/dist/entities/image.entity';
 import { ErrorService } from '../../util/error-manager/error.service';
 import { ClipboardService } from '../../util/clipboard.service';
@@ -9,6 +10,8 @@ import { Logger } from '../../services/logger/logger.service';
 export interface ShareDialogData {
   image: EImage;
   imageUrl: string;
+  isVideo?: boolean;
+  videoFormat?: string;
 }
 
 interface ShareRecord {
@@ -82,23 +85,64 @@ export class ShareDialogComponent implements OnInit {
     return Date.now() > record.expiresAt;
   }
 
+  // 常见的视频文件扩展名
+  private readonly VIDEO_EXTENSIONS = ['.mp4', '.webm', '.mov', '.avi', '.mkv', '.ogv', '.m4v', '.3gp'];
+
+  /**
+   * 检查是否为视频
+   */
+  isVideoFile(): boolean {
+    // 优先使用传入的 isVideo 标志
+    if (this.data.isVideo) return true;
+
+    // 通过文件名检测
+    const fileName = this.data.image.file_name || '';
+    const ext = fileName.toLowerCase().split('.').pop() || '';
+    return this.VIDEO_EXTENSIONS.includes('.' + ext);
+  }
+
   /**
    * 根据选择的格式生成分享文本
    */
   getFormattedLink(): string {
     const url = this.data.imageUrl;
-    const name = this.data.image.file_name || '图片';
+    const name = this.data.image.file_name || (this.isVideoFile() ? '视频' : '图片');
+    const isVideo = this.isVideoFile();
 
     switch (this.selectedFormat) {
       case 'markdown':
-        return `![${name}](${url})`;
+        return `![${isVideo ? '视频' : name}](${url})`;
       case 'html':
+        if (isVideo) {
+          return `<video src="${url}" controls><source src="${url}" type="${this.getVideoMimeType()}">您的浏览器不支持视频播放</video>`;
+        }
         return `<img src="${url}" alt="${name}" />`;
       case 'bbcode':
-        return `[img]${url}[/img]`;
+        return isVideo ? `[video]${url}[/video]` : `[img]${url}[/img]`;
       default:
         return url;
     }
+  }
+
+  /**
+   * 获取视频的 MIME 类型
+   */
+  private getVideoMimeType(): string {
+    const fileName = this.data.image.file_name || '';
+    const ext = fileName.toLowerCase().split('.').pop() || '';
+
+    const mimeTypes: Record<string, string> = {
+      'mp4': 'video/mp4',
+      'webm': 'video/webm',
+      'mov': 'video/quicktime',
+      'avi': 'video/x-msvideo',
+      'mkv': 'video/x-matroska',
+      'ogv': 'video/ogg',
+      'm4v': 'video/x-m4v',
+      '3gp': 'video/3gpp',
+    };
+
+    return mimeTypes[ext] || 'video/mp4';
   }
 
   /**

@@ -8,6 +8,7 @@ import {
 import { ImageEntryVariant } from 'picsur-shared/dist/dto/image-entry-variant.enum';
 import { Ext2FileType, FileType2Mime } from 'picsur-shared/dist/dto/mimes.dto';
 import {
+  Fail,
   FT,
   HasFailed,
   IsFailure,
@@ -75,6 +76,9 @@ export class ImageController {
       ext: ext,
     };
 
+    // Set Content-Disposition to inline for browser display
+    res.header('Content-Disposition', 'inline');
+
     // Reuse existing logic
     return this.getImage(res, fullid, params);
   }
@@ -87,6 +91,9 @@ export class ImageController {
     @ImageFullIdParam() fullid: ImageFullId,
     @Query() params: ImageRequestParams,
   ): Promise<Buffer> {
+    // Set Content-Disposition to inline for browser display
+    res.header('Content-Disposition', 'inline');
+
     try {
       if (fullid.variant === ImageEntryVariant.ORIGINAL) {
         const image = ThrowIfFailed(
@@ -107,6 +114,42 @@ export class ImageController {
 
       res.type(ThrowIfFailed(FileType2Mime(image.filetype)));
       return image.data;
+    } catch (e) {
+      if (!IsFailure(e) || e.getType() !== FT.NotFound) throw e;
+
+      const message = ThrowIfFailed(
+        await GetBrandMessage(BrandMessageType.NotFound),
+      );
+      res.type(message.type);
+      return message.data;
+    }
+  }
+
+  @Get('thumb/:id')
+  async getThumbnail(
+    @Res({ passthrough: true }) res: FastifyReply,
+    @ImageIdParam() id: string,
+  ): Promise<Buffer> {
+    // Set Content-Disposition to inline for browser display
+    res.header('Content-Disposition', 'inline');
+
+    try {
+      // 优先返回 ORIGINAL（视频缩略图或图片原图）
+      const original = await this.imagesService.getOriginal(id);
+      if (!HasFailed(original)) {
+        res.type(ThrowIfFailed(FileType2Mime(original.filetype)));
+        return original.data;
+      }
+
+      // 如果没有 ORIGINAL，返回 MASTER（图片主文件）
+      const master = await this.imagesService.getMaster(id);
+      if (!HasFailed(master)) {
+        res.type(ThrowIfFailed(FileType2Mime(master.filetype)));
+        return master.data;
+      }
+
+      // 都没有就返回 404
+      throw Fail(FT.NotFound, 'Image not found');
     } catch (e) {
       if (!IsFailure(e) || e.getType() !== FT.NotFound) throw e;
 

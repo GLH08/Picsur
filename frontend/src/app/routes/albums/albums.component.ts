@@ -1,20 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AutoUnsubscribe } from 'ngx-auto-unsubscribe-decorator';
+import { EAlbum } from 'picsur-shared/dist/entities/album.entity';
+import { HasFailed } from 'picsur-shared/dist/types/failable';
+import { AlbumService } from '../../services/api/album.service';
 import { ErrorService } from '../../util/error-manager/error.service';
 import { Logger } from '../../services/logger/logger.service';
 import { DialogService } from '../../util/dialog-manager/dialog.service';
-import { StorageService, STORAGE_CONFIGS } from '../../services/storage/storage.service';
-
-export interface Album {
-  id: string;
-  name: string;
-  description?: string;
-  cover?: string;
-  imageIds: string[];
-  created_at: number;
-  updated_at: number;
-}
 
 @Component({
   selector: 'app-albums',
@@ -25,10 +17,10 @@ export interface Album {
 export class AlbumsComponent implements OnInit {
   private readonly logger: Logger = new Logger(AlbumsComponent.name);
 
-  albums: Album[] = [];
+  albums: EAlbum[] = [];
   loading = false;
   createDialogOpen = false;
-  editingAlbum: Album | null = null;
+  editingAlbum: EAlbum | null = null;
 
   albumForm = {
     name: '',
@@ -39,7 +31,7 @@ export class AlbumsComponent implements OnInit {
     private readonly router: Router,
     private readonly errorService: ErrorService,
     private readonly dialogService: DialogService,
-    private readonly storageService: StorageService,
+    private readonly albumService: AlbumService,
   ) {}
 
   async ngOnInit() {
@@ -49,7 +41,13 @@ export class AlbumsComponent implements OnInit {
   async loadAlbums() {
     this.loading = true;
     try {
-      this.albums = this.storageService.get<Album[]>(STORAGE_CONFIGS.ALBUMS) || [];
+      const result = await this.albumService.listAlbums();
+      if (HasFailed(result)) {
+        this.errorService.showFailure(result, this.logger);
+        this.albums = [];
+      } else {
+        this.albums = result;
+      }
     } catch (error) {
       this.logger.error('Failed to load albums:', error);
       this.errorService.error('加载相册失败', this.logger);
@@ -59,17 +57,13 @@ export class AlbumsComponent implements OnInit {
     }
   }
 
-  private saveAlbums() {
-    this.storageService.set(STORAGE_CONFIGS.ALBUMS, this.albums);
-  }
-
   openCreateDialog() {
     this.albumForm = { name: '', description: '' };
     this.editingAlbum = null;
     this.createDialogOpen = true;
   }
 
-  openEditDialog(album: Album, event?: Event) {
+  openEditDialog(album: EAlbum, event?: Event) {
     event?.stopPropagation();
     this.albumForm = {
       name: album.name,
@@ -94,30 +88,36 @@ export class AlbumsComponent implements OnInit {
     try {
       if (this.editingAlbum) {
         // 更新相册
+        const result = await this.albumService.updateAlbum(this.editingAlbum.id, {
+          name: this.albumForm.name.trim(),
+          description: this.albumForm.description.trim() || undefined,
+        });
+
+        if (HasFailed(result)) {
+          return this.errorService.showFailure(result, this.logger);
+        }
+
+        // 更新本地列表
         const index = this.albums.findIndex((a) => a.id === this.editingAlbum!.id);
         if (index !== -1) {
-          this.albums[index] = {
-            ...this.albums[index],
-            name: this.albumForm.name.trim(),
-            description: this.albumForm.description.trim(),
-            updated_at: Date.now(),
-          };
+          this.albums[index] = result;
         }
         this.errorService.success('相册更新成功');
       } else {
         // 创建新相册
-        const newAlbum: Album = {
-          id: this.generateId(),
-          name: this.albumForm.name.trim(),
-          description: this.albumForm.description.trim(),
-          imageIds: [],
-          created_at: Date.now(),
-          updated_at: Date.now(),
-        };
-        this.albums.unshift(newAlbum);
+        const result = await this.albumService.createAlbum(
+          this.albumForm.name.trim(),
+          this.albumForm.description.trim() || undefined,
+        );
+
+        if (HasFailed(result)) {
+          return this.errorService.showFailure(result, this.logger);
+        }
+
+        // 重新加载列表
+        await this.loadAlbums();
         this.errorService.success('相册创建成功');
       }
-      this.saveAlbums();
       this.closeDialog();
     } catch (error) {
       this.logger.error('Failed to save album:', error);
@@ -125,7 +125,7 @@ export class AlbumsComponent implements OnInit {
     }
   }
 
-  async deleteAlbum(album: Album, event?: Event) {
+  async deleteAlbum(album: EAlbum, event?: Event) {
     event?.stopPropagation();
 
     const pressedButton = await this.dialogService.showDialog({
@@ -139,8 +139,12 @@ export class AlbumsComponent implements OnInit {
 
     if (pressedButton === 'delete') {
       try {
+        const result = await this.albumService.deleteAlbum(album.id);
+        if (HasFailed(result)) {
+          return this.errorService.showFailure(result, this.logger);
+        }
+
         this.albums = this.albums.filter((a) => a.id !== album.id);
-        this.saveAlbums();
         this.errorService.success('相册删除成功');
       } catch (error) {
         this.logger.error('Failed to delete album:', error);
@@ -149,68 +153,19 @@ export class AlbumsComponent implements OnInit {
     }
   }
 
-  viewAlbum(album: Album) {
+  viewAlbum(album: EAlbum) {
     this.router.navigate(['/albums', album.id]);
   }
 
-  getPhotoCount(album: Album): number {
-    return album.imageIds?.length || 0;
+  getPhotoCount(album: EAlbum): number {
+    return album.image_ids?.length || 0;
   }
 
-  formatDate(timestamp: number): string {
-    return new Date(timestamp).toLocaleDateString();
+  getCoverUrl(album: EAlbum): string | null {
+    return album.cover_url || null;
   }
 
-  private generateId(): string {
-    return Date.now().toString(36) + Math.random().toString(36).substring(2, 8);
-  }
-
-  // 静态方法供其他组件调用
-  static addImageToAlbum(albumId: string, imageId: string): boolean {
-    try {
-      const key = STORAGE_CONFIGS.ALBUMS.key;
-      const saved = localStorage.getItem(key);
-      const albums: Album[] = saved ? JSON.parse(saved) : [];
-      const album = albums.find((a) => a.id === albumId);
-      if (!album) return false;
-
-      if (!album.imageIds.includes(imageId)) {
-        album.imageIds.push(imageId);
-        album.updated_at = Date.now();
-        localStorage.setItem(key, JSON.stringify(albums));
-      }
-      return true;
-    } catch {
-      return false;
-    }
-  }
-
-  static removeImageFromAlbum(albumId: string, imageId: string): boolean {
-    try {
-      const key = STORAGE_CONFIGS.ALBUMS.key;
-      const saved = localStorage.getItem(key);
-      if (!saved) return false;
-
-      const albums: Album[] = JSON.parse(saved);
-      const album = albums.find((a) => a.id === albumId);
-      if (!album) return false;
-
-      album.imageIds = album.imageIds.filter((id) => id !== imageId);
-      album.updated_at = Date.now();
-      localStorage.setItem(key, JSON.stringify(albums));
-      return true;
-    } catch {
-      return false;
-    }
-  }
-
-  static getAlbums(): Album[] {
-    try {
-      const key = STORAGE_CONFIGS.ALBUMS.key;
-      const saved = localStorage.getItem(key);
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
+  formatDate(date: Date): string {
+    return new Date(date).toLocaleDateString();
   }
 }

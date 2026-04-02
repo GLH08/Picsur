@@ -4,10 +4,12 @@ export interface UploadProgressItem {
   fileSize: number;
   progress: number; // 0-100
   speed: number; // bytes per second
+  smoothSpeed: number; // smoothed speed using EMA
   status: 'pending' | 'uploading' | 'success' | 'error';
   error?: string;
   imageId?: string;
   startTime?: number;
+  speedHistory: number[]; // history of speed measurements for smoothing
 }
 
 export interface UploadProgress {
@@ -16,6 +18,7 @@ export interface UploadProgress {
   totalSize: number;
   uploadedSize: number;
   currentSpeed: number;
+  smoothSpeed: number; // overall smoothed speed
   status: 'idle' | 'uploading' | 'completed' | 'error';
 }
 

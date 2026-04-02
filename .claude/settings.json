@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "env": {
+    "CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR": "1"
+  },
+  "permissions": {
+    "defaultMode": "acceptEdits",
+    "deny": [
+      "Bash(rm -rf *)",
+      "Bash(rm -fr *)",
+      "Bash(* rm -rf *)",
+      "Bash(* rm -fr *)"
+    ],
+    "ask": ["Bash(git push)", "Bash(git push *)"],
+    "allow": [
+      "Bash",
+      "Read",
+      "Edit",
+      "Write",
+      "LS",
+      "Glob",
+      "Grep",
+      "NotebookEdit",
+      "Agent",
+      "Skill"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Read|Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "powershell",
+            "command": ".\\.claude\\hooks\\enforce-project-boundary.ps1"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -17,6 +17,8 @@ import { PicsurLayersModule } from './layers/PicsurLayers.module.js';
 import { PicsurLoggerModule } from './logger/logger.module.js';
 import { AuthManagerModule } from './managers/auth/auth.module.js';
 import { DemoManagerModule } from './managers/demo/demo.module.js';
+import { MetricsModule } from './modules/metrics/metrics.module.js';
+import { VideoModule } from './modules/video/video.module.js';
 import { PicsurRoutesModule } from './routes/routes.module.js';
 
 const supportedNodeVersions = ['^16.17.0', '^18.6.0', '>=20.0.0'];
@@ -67,6 +69,8 @@ const imageCacheSet = (
     DatabaseModule,
     AuthManagerModule,
     DemoManagerModule,
+    MetricsModule,
+    VideoModule,
     PicsurRoutesModule,
     PicsurLayersModule,
   ],

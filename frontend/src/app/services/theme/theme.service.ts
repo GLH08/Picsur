@@ -3,6 +3,9 @@ import { BehaviorSubject } from 'rxjs';
 
 export type ThemeMode = 'dark' | 'light' | 'system';
 
+/** 主题切换动画持续时间（毫秒） */
+const THEME_TRANSITION_DURATION = 300;
+
 @Injectable({
   providedIn: 'root',
 })
@@ -40,7 +43,7 @@ export class ThemeService {
   setTheme(mode: ThemeMode) {
     this.themeModeSubject.next(mode);
     localStorage.setItem(this.STORAGE_KEY, mode);
-    this.applyTheme(mode);
+    this.applyThemeWithTransition(mode);
   }
 
   toggleTheme() {
@@ -62,6 +65,25 @@ export class ThemeService {
     return 'dark'; // 默认深色
   }
 
+  /**
+   * 带动画的主题应用
+   */
+  private applyThemeWithTransition(mode: ThemeMode) {
+    const isDark = mode === 'dark' || (mode === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    const targetClass = isDark ? 'theme-dark' : 'theme-light';
+
+    // 添加过渡类
+    document.body.classList.add('theme-transition');
+
+    // 应用主题
+    this.applyTheme(mode);
+
+    // 动画结束后移除过渡类
+    setTimeout(() => {
+      document.body.classList.remove('theme-transition');
+    }, THEME_TRANSITION_DURATION);
+  }
+
   private applyTheme(mode: ThemeMode) {
     const isDark = mode === 'dark' || (mode === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
 
@@ -72,7 +94,7 @@ export class ThemeService {
   private watchSystemTheme() {
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
       if (this.themeModeSubject.value === 'system') {
-        this.applyTheme('system');
+        this.applyThemeWithTransition('system');
       }
     });
   }

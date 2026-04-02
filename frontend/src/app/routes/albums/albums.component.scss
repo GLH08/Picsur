@@ -195,11 +195,11 @@
   gap: 4px;
   opacity: 0;
   transition: opacity 0.2s;
-  
+
   button {
     background: rgba(255, 255, 255, 0.9);
     backdrop-filter: blur(4px);
-    
+
     &.delete-btn { color: #f44336; }
   }
 }
@@ -301,26 +301,38 @@
   .album-card {
     background: #2d2d2d;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-    
+
     &:hover { box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4); }
   }
-  
+
   .album-name { color: rgba(255, 255, 255, 0.9); }
   .album-description { color: rgba(255, 255, 255, 0.6); }
   .album-meta { color: rgba(255, 255, 255, 0.5); }
   .loading-container p { color: rgba(255, 255, 255, 0.6); }
-  
+
+  .album-actions {
+    button {
+      background: rgba(0, 0, 0, 0.5);
+      color: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(4px);
+
+      &:hover { background: rgba(0, 0, 0, 0.7); }
+
+      &.delete-btn { color: #ff5252; }
+    }
+  }
+
   .empty-state {
     mat-icon { color: rgba(255, 255, 255, 0.3); }
     h2 { color: rgba(255, 255, 255, 0.6); }
     p { color: rgba(255, 255, 255, 0.5); }
   }
-  
+
   .dialog-content {
     background: #2d2d2d;
     color: rgba(255, 255, 255, 0.9);
   }
-  
+
   .dialog-header { border-bottom-color: rgba(255, 255, 255, 0.1); }
   .dialog-actions { border-top-color: rgba(255, 255, 255, 0.1); }
 }

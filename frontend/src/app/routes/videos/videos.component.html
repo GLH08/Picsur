@@ -1,0 +1,251 @@
+<div class="picsur-videos">
+  <mat-progress-spinner *ngIf="videos === null"></mat-progress-spinner>
+
+  <h2 class="text-center" *ngIf="videosSub !== null && totalCount <= 0">
+    没有可显示的视频
+  </h2>
+
+  <h2 class="text-center" *ngIf="videosSub !== null && totalCount > 0 && filteredCount <= 0 && searchQuery">
+    没有找到匹配的视频
+  </h2>
+
+  <ng-container *ngIf="videosSub !== null && totalCount > 0">
+    <div class="videos-header">
+      <div class="header-left">
+        <h1>我的视频</h1>
+        <span class="video-count" *ngIf="!searchQuery">共 {{ totalCount }} 个</span>
+        <span class="video-count" *ngIf="searchQuery">找到 {{ filteredCount }} / {{ totalCount }} 个</span>
+      </div>
+      <div class="header-actions">
+        <button mat-icon-button (click)="toggleSearch()" [class.active]="searchActive">
+          <mat-icon>search</mat-icon>
+        </button>
+        <button mat-stroked-button (click)="toggleSelectionMode()">
+          <mat-icon>{{ selectionMode ? 'close' : 'check_box' }}</mat-icon>
+          {{ selectionMode ? '取消选择' : '选择' }}
+        </button>
+      </div>
+    </div>
+
+    <!-- 搜索框 -->
+    <div class="search-bar" *ngIf="searchActive">
+      <mat-form-field appearance="outline" class="search-field">
+        <mat-label>搜索视频</mat-label>
+        <input
+          matInput
+          [ngModel]="searchQuery"
+          (ngModelChange)="onSearchChange($event)"
+          placeholder="输入文件名或标签搜索..."
+          autofocus
+        />
+        <button mat-icon-button matSuffix *ngIf="searchQuery" (click)="clearSearch()">
+          <mat-icon>close</mat-icon>
+        </button>
+        <mat-icon matPrefix>search</mat-icon>
+      </mat-form-field>
+    </div>
+
+    <!-- 选择模式工具栏 -->
+    <div class="selection-toolbar" *ngIf="selectionMode">
+      <div class="selection-info">已选择 {{ selectedCount }} 个</div>
+      <div class="selection-actions">
+        <button mat-button (click)="selectAll()">全选</button>
+        <button mat-button (click)="deselectAll()">取消全选</button>
+        <button mat-stroked-button color="warn" (click)="deleteSelected()" [disabled]="selectedCount === 0">
+          <mat-icon>delete</mat-icon>
+          批量删除
+        </button>
+      </div>
+    </div>
+
+    <!-- 按时间分组展示 -->
+    <div class="video-groups">
+      <div class="video-group" *ngFor="let group of groupedVideos">
+        <div class="group-header" (click)="toggleGroup(group)">
+          <mat-icon>{{ group.collapsed ? 'expand_more' : 'expand_less' }}</mat-icon>
+          <span class="group-title">{{ group.title }}</span>
+          <span class="group-count">{{ group.videos.length }} 个</span>
+        </div>
+
+        <div class="video-grid" *ngIf="!group.collapsed" [style.--columns]="columns">
+          <div
+            class="video-item"
+            *ngFor="let video of group.videos"
+            [class.selected]="isSelected(video)"
+            (click)="handleVideoClick(video, $event)"
+            (contextmenu)="openContextMenu($event, video)"
+          >
+            <!-- 选择复选框 -->
+            <div
+              class="select-checkbox"
+              [class.visible]="selectionMode || isSelected(video)"
+              (click)="toggleSelect(video, $event)"
+            >
+              <mat-icon>{{ isSelected(video) ? 'check_box' : 'check_box_outline_blank' }}</mat-icon>
+            </div>
+
+            <div class="video-wrapper">
+              <img
+                [src]="getThumbnailUrl(video)"
+                [alt]="video.file_name || '视频'"
+                loading="lazy"
+                (error)="onVideoError($event)"
+              />
+              <div class="video-overlay">
+                <mat-icon>play_circle_filled</mat-icon>
+              </div>
+            </div>
+            <div class="video-name" *ngIf="video.file_name">{{ video.file_name }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <paginator [total-pages]="pages" [page]="page" (page)="gotoPage($event)"></paginator>
+  </ng-container>
+</div>
+
+<!-- 右键菜单 -->
+<div
+  class="picsur-context-menu"
+  *ngIf="contextMenuVisible"
+  [style.left.px]="contextMenuX"
+  [style.top.px]="contextMenuY"
+>
+  <button (click)="copyVideoUrl()">
+    <mat-icon>link</mat-icon>
+    <span>复制视频链接</span>
+  </button>
+  <button (click)="shareVideo()">
+    <mat-icon>share</mat-icon>
+    <span>分享视频</span>
+  </button>
+  <button (click)="addVideoToAlbum()">
+    <mat-icon>photo_library</mat-icon>
+    <span>添加到相册</span>
+  </button>
+  <mat-divider></mat-divider>
+  <button (click)="viewVideoDetails()">
+    <mat-icon>info</mat-icon>
+    <span>查看详情</span>
+  </button>
+  <button (click)="manageTagFromMenu()">
+    <mat-icon>label</mat-icon>
+    <span>管理标签</span>
+  </button>
+  <mat-divider></mat-divider>
+  <button class="delete-item" (click)="deleteContextVideo()">
+    <mat-icon>delete</mat-icon>
+    <span>删除视频</span>
+  </button>
+</div>
+
+<!-- 全屏视频播放器 -->
+<ng-container *ngIf="viewerOpen">
+  <div class="video-viewer">
+    <div class="video-viewer-backdrop" (click)="closeViewer()"></div>
+
+    <div class="video-viewer-container">
+      <video
+        *ngIf="viewerVideo"
+        class="video-viewer-video"
+        [src]="getVideoUrl(viewerVideo)"
+        controls
+        autoplay
+        playsinline
+      >
+        您的浏览器不支持视频播放
+      </video>
+    </div>
+
+    <!-- 左右切换按钮 -->
+    <button class="video-viewer-nav video-viewer-prev" (click)="viewerPrev()" title="上一个">
+      <mat-icon>chevron_left</mat-icon>
+    </button>
+    <button class="video-viewer-nav video-viewer-next" (click)="viewerNext()" title="下一个">
+      <mat-icon>chevron_right</mat-icon>
+    </button>
+
+    <!-- 关闭按钮 -->
+    <button class="video-viewer-close" (click)="closeViewer()" title="关闭">
+      <mat-icon>close</mat-icon>
+    </button>
+
+    <!-- 底部信息栏 -->
+    <div class="video-viewer-info">
+      <div class="video-viewer-info-left">
+        <div class="video-name" *ngIf="viewerVideo?.file_name">{{ viewerVideo?.file_name }}</div>
+        <div class="video-meta">
+          {{ viewerIndex + 1 }} / {{ videos?.length }} · {{ viewerVideo?.created | date:'yyyy-MM-dd HH:mm' }}
+        </div>
+      </div>
+    </div>
+  </div>
+</ng-container>
+
+<!-- 标签管理侧边面板 -->
+<div class="picsur-tag-panel-overlay" *ngIf="tagPanelOpen" (click)="closeTagPanel()">
+  <div class="tag-panel" (click)="$event.stopPropagation()">
+    <div class="tag-panel-header">
+      <h3>
+        <mat-icon>label</mat-icon>
+        标签管理
+      </h3>
+      <button mat-icon-button (click)="closeTagPanel()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+    <div class="tag-panel-body" *ngIf="tagPanelVideo">
+      <!-- 视频预览 -->
+      <div class="tag-panel-preview">
+        <img [src]="getThumbnailUrl(tagPanelVideo)" [alt]="tagPanelVideo.file_name || '视频'" />
+      </div>
+
+      <!-- 视频信息 -->
+      <div class="tag-panel-info">
+        <div class="info-row">
+          <mat-icon>fingerprint</mat-icon>
+          <span>ID: {{ tagPanelVideo.id }}</span>
+        </div>
+        <div class="info-row">
+          <mat-icon>schedule</mat-icon>
+          <span>上传: {{ tagPanelVideo.created | date:'yyyy-MM-dd HH:mm' }}</span>
+        </div>
+      </div>
+
+      <!-- 标签显示/编辑 -->
+      <div class="tag-panel-content">
+        <div class="tag-view-mode" *ngIf="!tagEditMode">
+          <div class="current-tag" [class.has-tag]="hasTag(tagPanelVideo)">
+            <mat-icon>{{ hasTag(tagPanelVideo) ? 'label' : 'label_outline' }}</mat-icon>
+            <span *ngIf="hasTag(tagPanelVideo)">{{ tagPanelVideo.file_name }}</span>
+            <span *ngIf="!hasTag(tagPanelVideo)" class="no-tag-text">暂无标签</span>
+          </div>
+          <div class="tag-actions">
+            <button mat-stroked-button color="primary" (click)="startTagEdit()">
+              <mat-icon>edit</mat-icon>
+              {{ hasTag(tagPanelVideo) ? '编辑' : '添加' }}
+            </button>
+            <button mat-stroked-button color="warn" (click)="deleteTag()" *ngIf="hasTag(tagPanelVideo)">
+              <mat-icon>delete</mat-icon>
+              删除
+            </button>
+          </div>
+        </div>
+
+        <div class="tag-edit-mode" *ngIf="tagEditMode">
+          <mat-form-field appearance="outline" class="tag-input">
+            <mat-label>标签内容</mat-label>
+            <input matInput [(ngModel)]="tagEditValue" placeholder="输入标签..." maxlength="100" autofocus />
+            <mat-hint>{{ tagEditValue.length }}/100</mat-hint>
+          </mat-form-field>
+          <div class="tag-edit-actions">
+            <button mat-button (click)="cancelTagEdit()">取消</button>
+            <button mat-raised-button color="primary" (click)="saveTag()">保存</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

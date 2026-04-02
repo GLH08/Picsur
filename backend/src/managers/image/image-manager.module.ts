@@ -11,6 +11,7 @@ import { SysPreferenceDbService } from '../../collections/preference-db/sys-pref
 import { ImageConverterService } from './image-converter.service.js';
 import { ImageProcessorService } from './image-processor.service.js';
 import { ImageManagerService } from './image.service.js';
+import { VideoThumbnailService } from './video-thumbnail.service.js';
 
 @Module({
   imports: [ImageDBModule, PreferenceDbModule],
@@ -18,8 +19,9 @@ import { ImageManagerService } from './image.service.js';
     ImageManagerService,
     ImageProcessorService,
     ImageConverterService,
+    VideoThumbnailService,
   ],
-  exports: [ImageManagerService, ImageConverterService],
+  exports: [ImageManagerService, ImageConverterService, VideoThumbnailService],
 })
 export class ImageManagerModule implements OnModuleInit {
   private readonly logger = new Logger(ImageManagerModule.name);

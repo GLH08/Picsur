@@ -1,0 +1,100 @@
+# ============================================
+# Picsur 图床 - 远程镜像部署配置
+# ============================================
+# 使用 GitHub Container Registry (ghcr.io) 拉取预构建镜像
+# 无需本地构建，拉取后直接运行
+
+services:
+  # ============================================
+  # PostgreSQL 数据库
+  # ============================================
+  postgres:
+    image: postgres:17-alpine
+    container_name: picsur_postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-picsur}
+      POSTGRES_USER: ${POSTGRES_USER:-picsur}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-picsur_password_2024}
+      TZ: ${TZ:-Asia/Shanghai}
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-picsur} -d ${POSTGRES_DB:-picsur}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - picsur_network
+
+  # ============================================
+  # Picsur 图床应用 (使用远程镜像)
+  # ============================================
+  picsur:
+    image: ghcr.io/glh08/picsur:latest
+    container_name: picsur_app
+    pull_policy: always
+    ports:
+      - '${PICSUR_PORT:-8080}:8080'
+    environment:
+      # ------------------------------------------
+      # 数据库配置
+      # ------------------------------------------
+      PICSUR_DB_HOST: postgres
+      PICSUR_DB_PORT: 5432
+      PICSUR_DB_USERNAME: ${POSTGRES_USER:-picsur}
+      PICSUR_DB_PASSWORD: ${POSTGRES_PASSWORD:-picsur_password_2024}
+      PICSUR_DB_DATABASE: ${POSTGRES_DB:-picsur}
+
+      # ------------------------------------------
+      # 服务器配置
+      # ------------------------------------------
+      PICSUR_HOST: 0.0.0.0
+      PICSUR_PORT: 8080
+
+      # ------------------------------------------
+      # 管理员配置（首次启动时设置）
+      # ------------------------------------------
+      PICSUR_ADMIN_PASSWORD: ${PICSUR_ADMIN_PASSWORD:-admin_password_2024}
+
+      # ------------------------------------------
+      # 安全配置
+      # ------------------------------------------
+      PICSUR_JWT_SECRET: ${PICSUR_JWT_SECRET:-picsur_jwt_secret_key_change_in_production}
+      PICSUR_JWT_EXPIRY: ${PICSUR_JWT_EXPIRY:-7d}
+
+      # ------------------------------------------
+      # 文件上传配置
+      # ------------------------------------------
+      PICSUR_MAX_FILE_SIZE: ${PICSUR_MAX_FILE_SIZE:-500000000}
+
+      # ------------------------------------------
+      # 运行模式
+      # ------------------------------------------
+      PICSUR_PRODUCTION: ${PICSUR_PRODUCTION:-true}
+      PICSUR_SYNCHRONIZE: ${PICSUR_SYNCHRONIZE:-true}
+      PICSUR_VERBOSE: ${PICSUR_VERBOSE:-false}
+      PICSUR_DEMO: ${PICSUR_DEMO:-false}
+
+      # ------------------------------------------
+      # 时区
+      # ------------------------------------------
+      TZ: ${TZ:-Asia/Shanghai}
+    volumes:
+      - ./uploads:/app/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - picsur_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/info"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+networks:
+  picsur_network:
+    driver: bridge

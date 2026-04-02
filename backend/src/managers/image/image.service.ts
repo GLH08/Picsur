@@ -9,6 +9,8 @@ import {
   FileType2Ext,
   ImageFileType,
   Mime2FileType,
+  SupportedFileTypeCategory,
+  VideoFileType,
 } from 'picsur-shared/dist/dto/mimes.dto';
 import { SysPreference } from 'picsur-shared/dist/dto/sys-preferences.enum';
 import {
@@ -29,6 +31,7 @@ import { EImageBackend } from '../../database/entities/images/image.entity.js';
 import { MutexFallBack } from '../../util/mutex-fallback.js';
 import { ImageConverterService } from './image-converter.service.js';
 import { ImageProcessorService } from './image-processor.service.js';
+import { VideoThumbnailService } from './video-thumbnail.service.js';
 import { WebPInfo } from './webpinfo/webpinfo.js';
 
 @Injectable()
@@ -41,6 +44,7 @@ export class ImageManagerService {
     private readonly processService: ImageProcessorService,
     private readonly convertService: ImageConverterService,
     private readonly sysPref: SysPreferenceDbService,
+    private readonly videoThumbnailService: VideoThumbnailService,
   ) { }
 
   public async findOne(id: string): AsyncFailable<EImageBackend> {
@@ -51,8 +55,65 @@ export class ImageManagerService {
     count: number,
     page: number,
     userid: string | undefined,
+    type: 'all' | 'image' | 'video' = 'all',
   ): AsyncFailable<FindResult<EImageBackend>> {
+    // If filtering by type, get all results and filter
+    if (type !== 'all') {
+      return await this.filterByType(count, page, userid, type);
+    }
     return await this.imagesService.findMany(count, page, userid);
+  }
+
+  /**
+   * Filter images/videos by master file type
+   */
+  private async filterByType(
+    count: number,
+    page: number,
+    userid: string | undefined,
+    type: 'image' | 'video',
+  ): AsyncFailable<FindResult<EImageBackend>> {
+    // 获取用户的总图片数量
+    const totalImages = await this.imagesService.count();
+    if (HasFailed(totalImages)) return totalImages;
+
+    // 获取所有图片进行过滤（需要获取全部才能按类型过滤）
+    // 但限制获取数量避免超时
+    const maxFetch = Math.min(totalImages, 500);
+    const allImages = await this.imagesService.findMany(maxFetch, 0, userid);
+    if (HasFailed(allImages)) return allImages;
+
+    // Filter by file type
+    const filteredImages: EImageBackend[] = [];
+    for (const image of allImages.results) {
+      const fileTypes = await this.imageFilesService.getFileTypes(image.id);
+      if (HasFailed(fileTypes)) continue;
+
+      const masterType = fileTypes['master'];
+      if (!masterType) continue;
+
+      const parsed = ParseFileType(masterType);
+      if (HasFailed(parsed)) continue;
+
+      if (type === 'video' && parsed.category === SupportedFileTypeCategory.Video) {
+        filteredImages.push(image);
+      } else if (type === 'image' && parsed.category !== SupportedFileTypeCategory.Video) {
+        filteredImages.push(image);
+      }
+    }
+
+    // Paginate filtered results
+    const total = filteredImages.length;
+    const start = count * page;
+    const end = start + count;
+    const paginatedResults = filteredImages.slice(start, end);
+
+    return {
+      results: paginatedResults,
+      total,
+      page,
+      pages: Math.ceil(total / count) || 1,
+    };
   }
 
   public async update(
@@ -133,11 +194,63 @@ export class ImageManagerService {
         masterPath,
       );
       if (HasFailed(imageFileEntity)) return imageFileEntity;
+
+      // Generate thumbnail for videos
+      if (fileType.category === SupportedFileTypeCategory.Video) {
+        await this.generateVideoThumbnail(imageEntity.id, masterPath);
+      }
     } catch (e) {
       return Fail(FT.Internal, `Failed to save file to disk: ${e}`);
     }
 
     return imageEntity;
+  }
+
+  /**
+   * 为视频生成缩略图
+   */
+  private async generateVideoThumbnail(
+    imageId: string,
+    videoPath: string,
+  ): AsyncFailable<void> {
+    try {
+      // 缩略图存储在同名 .thumb.jpg 文件
+      const thumbnailPath = videoPath + '.thumb.jpg';
+
+      const thumbnail = await this.videoThumbnailService.generateThumbnail(
+        videoPath,
+        thumbnailPath,
+      );
+
+      if (HasFailed(thumbnail)) {
+        this.logger.warn(`Failed to generate thumbnail for ${imageId}: ${thumbnail.getReason()}`);
+        return; // 不影响主流程
+      }
+
+      // 将缩略图存储为视频的 ORIGINAL variant (复用现有 variant)
+      // 或者可以使用 derivative 存储
+      const fs = await import('fs/promises');
+      const thumbnailData = await fs.readFile(thumbnailPath);
+
+      // 使用 setFile 将缩略图存储为 ORIGINAL variant
+      const result = await this.imageFilesService.setFile(
+        imageId,
+        ImageEntryVariant.ORIGINAL,
+        thumbnailData,
+        ImageFileType.JPEG,
+        thumbnailPath,
+      );
+
+      if (HasFailed(result)) {
+        this.logger.warn(`Failed to save thumbnail for ${imageId}: ${result.getReason()}`);
+        return;
+      }
+
+      this.logger.log(`Generated and saved thumbnail for video: ${imageId}`);
+    } catch (e) {
+      // 缩略图生成失败不影响主流程
+      this.logger.warn(`Error generating thumbnail for ${imageId}: ${e}`);
+    }
   }
 
   public async getConverted(
@@ -147,6 +260,24 @@ export class ImageManagerService {
   ): AsyncFailable<EImageDerivativeBackend> {
     const targetFileType = ParseFileType(fileType);
     if (HasFailed(targetFileType)) return targetFileType;
+
+    // Check if the source is a video - videos cannot be converted
+    const masterFileType = await this.getMasterFileType(imageId);
+    if (HasFailed(masterFileType)) return masterFileType;
+    if (masterFileType.category === SupportedFileTypeCategory.Video) {
+      // Videos are served as-is from master (no conversion)
+      const master = await this.getMaster(imageId);
+      if (HasFailed(master)) return master;
+
+      // Return master as a derivative-like result
+      const derivative = new EImageDerivativeBackend();
+      derivative.image_id = imageId;
+      derivative.key = fileType;
+      derivative.filetype = master.filetype;
+      derivative.data = master.data;
+      derivative.last_read = new Date();
+      return derivative;
+    }
 
     const converted_key = this.getConvertHash({ mime: fileType, ...options });
 
@@ -260,12 +391,28 @@ export class ImageManagerService {
       else filetype = ImageFileType.WEBP;
     }
     if (filetype === undefined) {
+      // Try to match as video MIME type
+      filetype = this.mimeToVideoFileType(mime);
+    }
+    if (filetype === undefined) {
       const parsed = Mime2FileType(mime);
       if (HasFailed(parsed)) return parsed;
       filetype = parsed;
     }
 
     return ParseFileType(filetype);
+  }
+
+  private mimeToVideoFileType(mime: string): string | undefined {
+    const videoMimeMap: Record<string, string> = {
+      'video/mp4': VideoFileType.MP4,
+      'video/webm': VideoFileType.WEBM,
+      'video/quicktime': VideoFileType.MOV,
+      'video/x-msvideo': VideoFileType.AVI,
+      'video/x-matroska': VideoFileType.MKV,
+      'video/ogg': VideoFileType.OGV,
+    };
+    return videoMimeMap[mime];
   }
 
   private getConvertHash(options: object) {

@@ -14,7 +14,7 @@ export class MultipartConfigService {
   public getMaxFileSize(): number {
     return ParseInt(
       this.configService.get(`${EnvPrefix}MAX_FILE_SIZE`),
-      128000000,
+      500000000,
     );
   }
 

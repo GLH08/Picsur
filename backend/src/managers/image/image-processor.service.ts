@@ -28,6 +28,9 @@ export class ImageProcessorService {
       return await this.processStill(image, filetype);
     } else if (filetype.category === SupportedFileTypeCategory.Animation) {
       return await this.processAnimation(image, filetype);
+    } else if (filetype.category === SupportedFileTypeCategory.Video) {
+      // Videos are stored as-is without processing
+      return this.processVideo(image, filetype);
     } else {
       return Fail(FT.SysValidation, 'Unsupported mime type');
     }
@@ -58,5 +61,16 @@ export class ImageProcessorService {
       lossless: true,
       effort: 0,
     });
+  }
+
+  private async processVideo(
+    image: Buffer,
+    filetype: FileType,
+  ): AsyncFailable<ImageResult> {
+    // Videos are stored as-is without any processing
+    return {
+      image,
+      filetype: filetype.identifier,
+    };
   }
 }

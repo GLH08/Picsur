@@ -1,3 +1,11 @@
+# ============================================
+# Picsur 图床 - Docker Compose 配置
+# ============================================
+# 使用方式：
+#   1. 本地构建：docker compose up --build
+#   2. 远程镜像：docker compose -f docker-compose.remote.yml up
+#   3. 单独使用 postgres：docker compose up postgres
+
 services:
   # ============================================
   # PostgreSQL 数据库
@@ -19,6 +27,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 10s
     networks:
       - picsur_network
 
@@ -64,8 +73,8 @@ services:
       # ------------------------------------------
       # 文件上传配置
       # ------------------------------------------
-      # 最大文件大小（字节，默认128MB）
-      PICSUR_MAX_FILE_SIZE: ${PICSUR_MAX_FILE_SIZE:-134217728}
+      # 最大文件大小（字节，默认500MB，支持视频上传）
+      PICSUR_MAX_FILE_SIZE: ${PICSUR_MAX_FILE_SIZE:-500000000}
 
       # ------------------------------------------
       # 运行模式
@@ -97,7 +106,7 @@ services:
       test: ["CMD", "curl", "-f", "http://localhost:8080/api/info"]
       interval: 30s
       timeout: 10s
-      retries: 3
+      retries: 5
       start_period: 60s
 
 networks:

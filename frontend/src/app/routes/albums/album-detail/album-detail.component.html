@@ -10,7 +10,7 @@
       <p class="album-description selectable" *ngIf="album.description">{{ album.description }}</p>
       <div class="album-meta">
         <span><mat-icon>photo</mat-icon> {{ images.length }} 张图片</span>
-        <span><mat-icon>schedule</mat-icon> {{ formatDate(album.created_at) }}</span>
+        <span><mat-icon>schedule</mat-icon> {{ formatDate(album.created) }}</span>
       </div>
     </div>
 
@@ -53,10 +53,10 @@
   <!-- 图片网格 -->
   <div class="images-grid" *ngIf="!loading && images.length > 0">
     <div class="image-item" *ngFor="let image of images">
-      <div class="image-wrapper" (click)="viewImage(image)">
-        <img [src]="getThumbnailUrl(image)" [alt]="image.file_name || '图片'" loading="lazy" />
+      <div class="image-wrapper" (click)="handleItemClick(image)">
+        <img [src]="getThumbnailUrl(image)" [alt]="image.file_name || '图片'" loading="lazy" (error)="onImageError($event)" (load)="onImageLoad(image, $event)" />
         <div class="image-overlay">
-          <mat-icon>visibility</mat-icon>
+          <mat-icon>{{ getOverlayIcon(image) }}</mat-icon>
         </div>
       </div>
       <div class="image-actions">
@@ -75,10 +75,53 @@
   <div class="empty-state" *ngIf="!loading && images.length === 0">
     <mat-icon>photo_library</mat-icon>
     <h2>相册是空的</h2>
-    <p>在"我的图片"页面右键图片，选择"添加到相册"</p>
+    <p>在"我的图片"或"我的视频"页面右键，选择"添加到相册"</p>
     <button mat-stroked-button routerLink="/images" class="add-btn">
       <mat-icon>image</mat-icon>
-      <span>去添加图片</span>
+      <span>去添加</span>
     </button>
   </div>
 </div>
+
+<!-- 全屏视频播放器 -->
+<ng-container *ngIf="viewerOpen">
+  <div class="video-viewer">
+    <div class="video-viewer-backdrop" (click)="closeViewer()"></div>
+
+    <div class="video-viewer-container">
+      <video
+        *ngIf="viewerImage"
+        class="video-viewer-video"
+        [src]="viewerVideoUrl"
+        controls
+        autoplay
+        playsinline
+      >
+        您的浏览器不支持视频播放
+      </video>
+    </div>
+
+    <!-- 左右切换按钮 -->
+    <button class="video-viewer-nav video-viewer-prev" (click)="viewerPrev()" title="上一个">
+      <mat-icon>chevron_left</mat-icon>
+    </button>
+    <button class="video-viewer-nav video-viewer-next" (click)="viewerNext()" title="下一个">
+      <mat-icon>chevron_right</mat-icon>
+    </button>
+
+    <!-- 关闭按钮 -->
+    <button class="video-viewer-close" (click)="closeViewer()" title="关闭">
+      <mat-icon>close</mat-icon>
+    </button>
+
+    <!-- 底部信息栏 -->
+    <div class="video-viewer-info">
+      <div class="video-viewer-info-left">
+        <div class="video-name" *ngIf="viewerImage?.file_name">{{ viewerImage?.file_name }}</div>
+        <div class="video-meta">
+          {{ viewerIndex + 1 }} / {{ images.length }} · {{ viewerImage?.created | date:'yyyy-MM-dd HH:mm' }}
+        </div>
+      </div>
+    </div>
+  </div>
+</ng-container>

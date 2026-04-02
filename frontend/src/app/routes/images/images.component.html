@@ -86,11 +86,16 @@
 
             <div class="image-wrapper">
               <img
+                *ngIf="!isVideoItem(image)"
                 [src]="getThumbnailUrl(image)"
                 [alt]="image.file_name || '图片'"
                 loading="lazy"
                 (error)="onImageError($event)"
               />
+              <div *ngIf="isVideoItem(image)" class="video-placeholder">
+                <mat-icon>videocam</mat-icon>
+                <span>视频</span>
+              </div>
             </div>
           </div>
         </div>

@@ -20,6 +20,8 @@ export const ImageListRequestSchema = z.object({
   count: IsPosInt(),
   page: IsPosInt(),
   user_id: z.string().uuid().optional(),
+  // Filter by media type: 'all', 'image', 'video'
+  type: z.enum(['all', 'image', 'video']).default('all'),
 });
 export class ImageListRequest extends createZodDto(ImageListRequestSchema) { }
 

@@ -1,14 +1,15 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { EAlbum } from 'picsur-shared/dist/entities/album.entity';
+import { HasFailed } from 'picsur-shared/dist/types/failable';
+import { AlbumService } from '../../services/api/album.service';
 import { ErrorService } from '../../util/error-manager/error.service';
 import { Logger } from '../../services/logger/logger.service';
-import { StorageService, STORAGE_CONFIGS } from '../../services/storage/storage.service';
-import { Album, AlbumsComponent } from '../../routes/albums/albums.component';
 
 export interface AlbumPickerData {
   imageId: string;
   imageName: string;
-  imageUrl?: string; // 图片 URL，用于设置相册封面
+  imageUrl?: string;
 }
 
 @Component({
@@ -19,7 +20,7 @@ export interface AlbumPickerData {
 export class AlbumPickerComponent implements OnInit {
   private readonly logger: Logger = new Logger(AlbumPickerComponent.name);
 
-  albums: Album[] = [];
+  albums: EAlbum[] = [];
   loading = false;
   createMode = false;
   newAlbumName = '';
@@ -28,44 +29,62 @@ export class AlbumPickerComponent implements OnInit {
     public dialogRef: MatDialogRef<AlbumPickerComponent>,
     @Inject(MAT_DIALOG_DATA) public data: AlbumPickerData,
     private readonly errorService: ErrorService,
-    private readonly storageService: StorageService,
+    private readonly albumService: AlbumService,
   ) {}
 
   ngOnInit() {
     this.loadAlbums();
   }
 
-  loadAlbums() {
+  async loadAlbums() {
     this.loading = true;
     try {
-      this.albums = AlbumsComponent.getAlbums();
+      const result = await this.albumService.listAlbums();
+      if (HasFailed(result)) {
+        this.errorService.showFailure(result, this.logger);
+        this.albums = [];
+      } else {
+        this.albums = result;
+      }
     } catch (error) {
       this.logger.error('Failed to load albums:', error);
+      this.albums = [];
     } finally {
       this.loading = false;
     }
   }
 
-  isInAlbum(album: Album): boolean {
-    return album.imageIds?.includes(this.data.imageId) || false;
+  isInAlbum(album: EAlbum): boolean {
+    return album.image_ids?.includes(this.data.imageId) || false;
   }
 
-  toggleAlbum(album: Album) {
+  async toggleAlbum(album: EAlbum) {
     if (this.isInAlbum(album)) {
       // 从相册移除
-      const success = AlbumsComponent.removeImageFromAlbum(album.id, this.data.imageId);
-      if (success) {
-        album.imageIds = album.imageIds.filter((id) => id !== this.data.imageId);
-        this.errorService.success(`已从"${album.name}"移除`);
+      const result = await this.albumService.removeImagesFromAlbum(album.id, [this.data.imageId]);
+      if (HasFailed(result)) {
+        return this.errorService.showFailure(result, this.logger);
       }
+
+      // 更新本地列表
+      const index = this.albums.findIndex((a) => a.id === album.id);
+      if (index !== -1) {
+        this.albums[index] = result;
+      }
+      this.errorService.success(`已从"${album.name}"移除`);
     } else {
       // 添加到相册
-      const success = AlbumsComponent.addImageToAlbum(album.id, this.data.imageId);
-      if (success) {
-        if (!album.imageIds) album.imageIds = [];
-        album.imageIds.push(this.data.imageId);
-        this.errorService.success(`已添加到"${album.name}"`);
+      const result = await this.albumService.addImagesToAlbum(album.id, [this.data.imageId]);
+      if (HasFailed(result)) {
+        return this.errorService.showFailure(result, this.logger);
       }
+
+      // 更新本地列表
+      const index = this.albums.findIndex((a) => a.id === album.id);
+      if (index !== -1) {
+        this.albums[index] = result;
+      }
+      this.errorService.success(`已添加到"${album.name}"`);
     }
   }
 
@@ -79,7 +98,7 @@ export class AlbumPickerComponent implements OnInit {
     this.newAlbumName = '';
   }
 
-  createAndAdd() {
+  async createAndAdd() {
     if (!this.newAlbumName.trim()) {
       this.errorService.error('请输入相册名称', this.logger);
       return;
@@ -87,21 +106,23 @@ export class AlbumPickerComponent implements OnInit {
 
     try {
       // 创建新相册
-      const newAlbum: Album = {
-        id: Date.now().toString(36) + Math.random().toString(36).substring(2, 8),
-        name: this.newAlbumName.trim(),
-        imageIds: [this.data.imageId],
-        cover: this.data.imageUrl, // 使用当前图片作为封面
-        created_at: Date.now(),
-        updated_at: Date.now(),
-      };
+      const result = await this.albumService.createAlbum(
+        this.newAlbumName.trim(),
+      );
 
-      this.albums.unshift(newAlbum);
+      if (HasFailed(result)) {
+        return this.errorService.showFailure(result, this.logger);
+      }
 
-      // 保存到 localStorage
-      this.storageService.set(STORAGE_CONFIGS.ALBUMS, this.albums);
+      // 将图片添加到新相册
+      const addResult = await this.albumService.addImagesToAlbum(result, [this.data.imageId]);
+      if (HasFailed(addResult)) {
+        return this.errorService.showFailure(addResult, this.logger);
+      }
 
-      this.errorService.success(`已创建相册"${newAlbum.name}"并添加图片`);
+      // 重新加载列表
+      await this.loadAlbums();
+      this.errorService.success(`已创建相册并添加图片`);
       this.createMode = false;
       this.newAlbumName = '';
     } catch (error) {
@@ -110,8 +131,8 @@ export class AlbumPickerComponent implements OnInit {
     }
   }
 
-  getPhotoCount(album: Album): number {
-    return album.imageIds?.length || 0;
+  getPhotoCount(album: EAlbum): number {
+    return album.image_ids?.length || 0;
   }
 
   close() {

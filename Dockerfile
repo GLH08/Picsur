@@ -57,7 +57,8 @@ FROM node:20-alpine AS production
 # 安装运行时依赖
 RUN apk add --no-cache \
     postgresql-client \
-    curl
+    curl \
+    ffmpeg
 
 # 安装pnpm
 RUN npm install -g pnpm

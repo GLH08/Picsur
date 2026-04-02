@@ -1,7 +1,10 @@
 import { Component, HostListener, OnInit, ViewEncapsulation } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AutoUnsubscribe } from 'ngx-auto-unsubscribe-decorator';
-import { ImageFileType } from 'picsur-shared/dist/dto/mimes.dto';
+import {
+  ImageFileType,
+  SupportedVideoFileTypes,
+} from 'picsur-shared/dist/dto/mimes.dto';
 import { EImage } from 'picsur-shared/dist/entities/image.entity';
 import { HasFailed } from 'picsur-shared/dist/types/failable';
 import {
@@ -86,6 +89,12 @@ export class ImagesComponent implements OnInit {
 
   // 图片格式缓存
   private imageFormatCache = new Map<string, string>();
+
+  // 视频类型缓存
+  private videoTypeCache = new Map<string, boolean>();
+
+  // 常见的视频文件扩展名
+  private readonly VIDEO_EXTENSIONS = ['.mp4', '.webm', '.mov', '.avi', '.mkv', '.ogv', '.m4v', '.3gp'];
 
   public get images(): EImage[] | null {
     const value = this.imagesSub.value;
@@ -202,7 +211,8 @@ export class ImagesComponent implements OnInit {
       }
 
       try {
-        const list = await this.imageService.ListMyImages(48, this.page - 1);
+        // 只获取图片，排除视频
+        const list = await this.imageService.ListMyImagesOnly(48, this.page - 1);
         if (HasFailed(list)) {
           this.logger.warn(list.getReason());
           this.imagesSub.next([]);
@@ -245,8 +255,58 @@ export class ImagesComponent implements OnInit {
     return this.imageService.GetImageURL(image.id, null, false, image.created);
   }
 
+  // 检测是否为视频文件（通过文件名扩展名）
+  isVideoItem(image: EImage): boolean {
+    if (this.videoTypeCache.has(image.id)) {
+      return this.videoTypeCache.get(image.id)!;
+    }
+
+    // 优先通过文件名检测
+    const fileName = image.file_name || '';
+    const ext = fileName.toLowerCase().split('.').pop() || '';
+    const extBased = this.VIDEO_EXTENSIONS.includes('.' + ext);
+    if (extBased) {
+      this.videoTypeCache.set(image.id, true);
+      return true;
+    }
+
+    // 通过缓存的格式信息检测
+    const cachedFormat = this.imageFormatCache.get(image.id);
+    if (cachedFormat) {
+      const isVideo = SupportedVideoFileTypes.includes(cachedFormat);
+      this.videoTypeCache.set(image.id, isVideo);
+      return isVideo;
+    }
+
+    // 默认返回 false，未知格式会在获取元数据后更新
+    return false;
+  }
+
+  // 检查是否为视频（用于需要精确判断的场景）
+  async checkIsVideo(imageId: string): Promise<boolean> {
+    if (this.videoTypeCache.has(imageId)) {
+      return this.videoTypeCache.get(imageId)!;
+    }
+
+    const format = await this.getImageFormat(imageId);
+    const isVideo = SupportedVideoFileTypes.includes(format);
+    this.videoTypeCache.set(imageId, isVideo);
+    return isVideo;
+  }
+
   getFullImageUrl(image: EImage) {
-    return this.imageService.GetImageURL(image.id, ImageFileType.JPEG, false, image.created);
+    return this.imageService.GetImageURL(image.id, null, false, image.created);
+  }
+
+  // 获取图片/视频的正确格式 URL
+  async getMediaUrl(image: EImage): Promise<string> {
+    const format = await this.getImageFormat(image.id);
+    // 如果是视频格式，直接返回主格式的 URL
+    if (SupportedVideoFileTypes.includes(format)) {
+      return this.imageService.GetImageURL(image.id, format, false, image.created);
+    }
+    // 图片使用请求的格式
+    return this.imageService.GetImageURL(image.id, format, false, image.created);
   }
 
   // 获取图片原始格式
@@ -512,7 +572,7 @@ export class ImagesComponent implements OnInit {
    * - Shift + 点击：连续选择
    * - 普通点击：打开查看器或切换选择
    */
-  handleImageClick(image: EImage, event: MouseEvent) {
+  async handleImageClick(image: EImage, event: MouseEvent) {
     event.stopPropagation();
 
     // Ctrl/Cmd 多选
@@ -537,7 +597,13 @@ export class ImagesComponent implements OnInit {
       this.toggleSelect(image);
       this.lastSelectedId = image.id;
     } else {
-      this.openViewer(image);
+      // 视频直接跳转到查看页面，图片打开查看器
+      const isVideo = await this.checkIsVideo(image.id);
+      if (isVideo) {
+        this.viewImage(image);
+      } else {
+        this.openViewer(image);
+      }
     }
   }
 
@@ -805,19 +871,22 @@ export class ImagesComponent implements OnInit {
   // ========== 分享功能 ==========
   async shareImage() {
     if (!this.contextMenuImage) return;
-    
+
     const image = this.contextMenuImage;
     const format = await this.getImageFormat(image.id);
     const imageUrl = this.buildImageUrl(image.id, format, image.created);
-    
+    const isVideo = SupportedVideoFileTypes.includes(format);
+
     this.dialog.open(ShareDialogComponent, {
       data: {
         image: image,
         imageUrl: imageUrl,
+        isVideo: isVideo,
+        videoFormat: format,
       } as ShareDialogData,
       panelClass: 'share-dialog-panel',
     });
-    
+
     this.closeContextMenu();
   }
 

@@ -18,8 +18,8 @@
   <div class="albums-grid" *ngIf="!loading && albums.length > 0">
     <div class="album-card" *ngFor="let album of albums" (click)="viewAlbum(album)">
       <div class="album-cover">
-        <img *ngIf="album.cover" [src]="album.cover" [alt]="album.name" loading="lazy" />
-        <div class="album-placeholder" *ngIf="!album.cover">
+        <img *ngIf="getCoverUrl(album)" [src]="getCoverUrl(album)" [alt]="album.name" loading="lazy" />
+        <div class="album-placeholder" *ngIf="!getCoverUrl(album)">
           <mat-icon>photo_library</mat-icon>
           <span *ngIf="getPhotoCount(album) === 0">空相册</span>
         </div>
@@ -40,7 +40,7 @@
             {{ getPhotoCount(album) }} 张图片
           </span>
           <span class="created-date">
-            {{ formatDate(album.created_at) }}
+            {{ formatDate(album.created) }}
           </span>
         </div>
       </div>

@@ -1,0 +1,44 @@
+# ============================================
+# Prometheus 配置文件
+# ============================================
+# 用法：
+#   1. 将此文件复制到 prometheus.yml
+#   2. 根据需要修改配置
+#   3. 运行：prometheus --config.file=prometheus.yml
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+  # 附加到任何时间序列或警报标签
+  external_labels:
+    monitor: 'picsur'
+
+# Alertmanager 配置（可选）
+# alerting:
+#   alertmanagers:
+#     - static_configs:
+#         - targets:
+#           - alertmanager:9093
+
+# 规则文件（可选）
+# rule_files:
+
+scrape_configs:
+  # Prometheus 自身指标
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Picsur 应用指标
+  - job_name: 'picsur'
+    static_configs:
+      - targets: ['picsur:8080']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+    scrape_timeout: 10s
+
+  # 可选：PostgreSQL 指标（需要 postgres_exporter）
+  # - job_name: 'postgresql'
+  #   static_configs:
+  #     - targets: ['postgres-exporter:9187']
