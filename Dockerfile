@@ -2,7 +2,7 @@
 # 多阶段构建
 # ================================
 # 构建阶段
-FROM node:20-alpine AS builder
+FROM node:24-alpine AS builder
 
 # 安装构建依赖
 RUN apk add --no-cache \
@@ -55,7 +55,7 @@ WORKDIR /app
 # ================================
 # 生产阶段
 # ================================
-FROM node:20-alpine AS production
+FROM node:24-alpine AS production
 
 # 安装运行时依赖
 RUN apk add --no-cache \
