@@ -188,12 +188,15 @@ crontab -e
 
 1. 运行 Migration 检查
 2. 构建并推送 Docker 镜像到 GitHub Container Registry（`latest` 标签）
+3. 支持多平台构建：`linux/amd64`, `linux/arm64`
 
 ### 镜像地址
 
 ```
 ghcr.io/glh08/picsur:latest
 ```
+
+> ARM64 镜像适用于 Apple Silicon Mac、树莓派、RISC-V 服务器等 ARM 架构设备。
 
 ### 部署到生产服务器
 
