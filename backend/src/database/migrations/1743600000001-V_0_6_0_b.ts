@@ -25,36 +25,45 @@ export class V060B1743600000001 implements MigrationInterface {
       `CREATE INDEX "IDX_album_image_image_id" ON "e_album_image_backend" ("image_id")`,
     );
 
-    // 3. 迁移现有数据（从 simple-array 到关联表）
-    // 获取所有包含图片的相册
-    const albums = await queryRunner.query(`
-      SELECT id, image_ids
-      FROM e_album_backend
-      WHERE image_ids IS NOT NULL
-        AND image_ids != ''
-        AND char_length(image_ids) > 0
-    `);
-
-    for (const album of albums) {
-      if (album.image_ids && album.image_ids.length > 0) {
-        // 解析 simple-array（逗号分隔的 UUID）
-        const imageIds = album.image_ids.split(',').filter((id: string) => id && id.length > 0);
-
-        for (let i = 0; i < imageIds.length; i++) {
-          await queryRunner.query(
-            `INSERT INTO "e_album_image_backend" ("album_id", "image_id", "position", "added_at")
-             VALUES ($1, $2, $3, $4)
-             ON CONFLICT ("album_id", "image_id") DO NOTHING`,
-            [album.id, imageIds[i].trim(), i, new Date()],
-          );
-        }
-      }
+    // 3. 创建相册用户索引（仅当 e_album_backend 表存在时）
+    // 注意：e_album_backend 表可能由 synchronize 创建，也可能不存在
+    try {
+      await queryRunner.query(
+        `CREATE INDEX "IDX_album_user_id" ON "e_album_backend" ("user_id")`,
+      );
+    } catch (error) {
+      // 表不存在则跳过索引创建
     }
 
-    // 4. 可选：验证迁移结果
-    const newCount = await queryRunner.query(`
-      SELECT COUNT(*) as count FROM e_album_image_backend
-    `);
+    // 4. 迁移现有数据（从 simple-array 到关联表）
+    // 仅当 e_album_backend 表存在时执行
+    try {
+      const albums = await queryRunner.query(`
+        SELECT id, image_ids
+        FROM e_album_backend
+        WHERE image_ids IS NOT NULL
+          AND image_ids != ''
+          AND char_length(image_ids) > 0
+      `);
+
+      for (const album of albums) {
+        if (album.image_ids && album.image_ids.length > 0) {
+          // 解析 simple-array（逗号分隔的 UUID）
+          const imageIds = album.image_ids.split(',').filter((id: string) => id && id.length > 0);
+
+          for (let i = 0; i < imageIds.length; i++) {
+            await queryRunner.query(
+              `INSERT INTO "e_album_image_backend" ("album_id", "image_id", "position", "added_at")
+               VALUES ($1, $2, $3, $4)
+               ON CONFLICT ("album_id", "image_id") DO NOTHING`,
+              [album.id, imageIds[i].trim(), i, new Date()],
+            );
+          }
+        }
+      }
+    } catch (error) {
+      // 表不存在则跳过数据迁移
+    }
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {

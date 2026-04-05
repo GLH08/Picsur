@@ -19,11 +19,6 @@ export class V060A1743600000000 implements MigrationInterface {
       `CREATE INDEX "IDX_image_user_created" ON "e_image_backend" ("user_id", "created" DESC)`,
     );
 
-    // 索引：相册用户查询优化
-    await queryRunner.query(
-      `CREATE INDEX "IDX_album_user_id" ON "e_album_backend" ("user_id")`,
-    );
-
     // 索引：API Key 最后使用时间查询
     await queryRunner.query(
       `CREATE INDEX "IDX_api_key_last_used" ON "e_api_key_backend" ("last_used" DESC)`,
@@ -39,9 +34,6 @@ export class V060A1743600000000 implements MigrationInterface {
     );
     await queryRunner.query(
       `DROP INDEX "public"."IDX_image_user_id"`,
-    );
-    await queryRunner.query(
-      `DROP INDEX "public"."IDX_album_user_id"`,
     );
     await queryRunner.query(
       `DROP INDEX "public"."IDX_api_key_last_used"`,
