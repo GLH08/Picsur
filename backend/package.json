@@ -13,7 +13,7 @@
     "start:dev": "pnpm clean && nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
-    "typeorm": "typeorm-ts-node-esm",
+    "typeorm": "tsx node_modules/typeorm/cli.js",
     "migrate": "PICSUR_PRODUCTION=\"true\" pnpm typeorm migration:generate -d ./src/datasource.ts",
     "migration:run": "pnpm typeorm migration:run -d ./src/datasource.ts",
     "migration:revert": "pnpm typeorm migration:revert -d ./src/datasource.ts",
@@ -86,6 +86,7 @@
     "ts-jest": "^29.4.6",
     "ts-loader": "^9.5.1",
     "ts-node": "^10.9.2",
+    "tsx": "^4.19.2",
     "tsconfig-paths": "^4.2.0",
     "typescript": "~5.5.4"
   }
