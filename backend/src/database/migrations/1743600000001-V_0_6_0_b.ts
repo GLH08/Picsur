@@ -26,18 +26,15 @@ export class V060B1743600000001 implements MigrationInterface {
     );
 
     // 3. 创建相册用户索引（仅当 e_album_backend 表存在时）
-    // 注意：e_album_backend 表可能由 synchronize 创建，也可能不存在
-    try {
+    if (await queryRunner.hasTable('e_album_backend')) {
       await queryRunner.query(
-        `CREATE INDEX "IDX_album_user_id" ON "e_album_backend" ("user_id")`,
+        `CREATE INDEX IF NOT EXISTS "IDX_album_user_id" ON "e_album_backend" ("user_id")`,
       );
-    } catch (error) {
-      // 表不存在则跳过索引创建
     }
 
     // 4. 迁移现有数据（从 simple-array 到关联表）
     // 仅当 e_album_backend 表存在时执行
-    try {
+    if (await queryRunner.hasTable('e_album_backend')) {
       const albums = await queryRunner.query(`
         SELECT id, image_ids
         FROM e_album_backend
@@ -61,8 +58,6 @@ export class V060B1743600000001 implements MigrationInterface {
           }
         }
       }
-    } catch (error) {
-      // 表不存在则跳过数据迁移
     }
   }
 

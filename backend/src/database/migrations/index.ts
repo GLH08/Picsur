@@ -9,6 +9,7 @@ import { V040D1662728275448 } from './1662728275448-V_0_4_0_d.js';
 import { V050A1672154027079 } from './1672154027079-V_0_5_0_a.js';
 import { V060A1743600000000 } from './1743600000000-V_0_6_0_a.js';
 import { V060B1743600000001 } from './1743600000001-V_0_6_0_b.js';
+import { V060C1743600000002 } from './1743600000002-V_0_6_0_c.js';
 
 export const MigrationList: Newable<MigrationInterface>[] = [
   V030A1661692206479,
@@ -20,4 +21,5 @@ export const MigrationList: Newable<MigrationInterface>[] = [
   V050A1672154027079,
   V060A1743600000000,
   V060B1743600000001,
+  V060C1743600000002,
 ];
