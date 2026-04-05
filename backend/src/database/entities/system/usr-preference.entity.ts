@@ -26,10 +26,10 @@ export class EUsrPreferenceBackend implements EUsrPreference {
   id?: string;
 
   @Index()
-  @Column({ nullable: false })
+  @Column({ type: 'varchar', nullable: false })
   key: string;
 
-  @Column({ nullable: false })
+  @Column({ type: 'text', nullable: false })
   value: string;
 
   // We do a little trickery
@@ -43,6 +43,7 @@ export class EUsrPreferenceBackend implements EUsrPreference {
 
   @Column({
     name: 'user_id',
+    type: 'uuid',
   })
   user_id: string;
 }

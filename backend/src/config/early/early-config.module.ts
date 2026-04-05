@@ -13,6 +13,7 @@ import { TypeOrmConfigService } from './type-orm.config.service.js';
     ConfigModule.forRoot({
       ignoreEnvVars: true,
       cache: true,
+      isGlobal: true,
     }),
   ],
   providers: [

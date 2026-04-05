@@ -8,7 +8,7 @@ export class ERoleBackend implements ERole {
   id?: string;
 
   @Index()
-  @Column({ nullable: false, unique: true })
+  @Column({ type: 'varchar', nullable: false, unique: true })
   name: string;
 
   @Column('text', { nullable: false, array: true })

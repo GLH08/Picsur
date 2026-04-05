@@ -24,13 +24,13 @@ export class EUserBackend implements OverriddenEUser {
   id: string;
 
   @Index()
-  @Column({ nullable: false, unique: true })
+  @Column({ type: 'varchar', nullable: false, unique: true })
   username: string;
 
   @Column('text', { nullable: false, array: true })
   roles: string[];
 
-  @Column({ nullable: false, select: false })
+  @Column({ type: 'varchar', nullable: false, select: false })
   hashed_password?: string;
 
   // This will never be populated, it is only here to auto delete apikeys when a user is deleted

@@ -6,9 +6,9 @@ export class ESystemStateBackend {
   id?: string;
 
   @Index()
-  @Column({ nullable: false, unique: true })
+  @Column({ type: 'varchar', nullable: false, unique: true })
   key: string;
 
-  @Column({ nullable: false })
+  @Column({ type: 'text', nullable: false })
   value: string;
 }

@@ -27,17 +27,18 @@ export class EImageFileBackend {
 
   @Column({
     name: 'image_id',
+    type: 'uuid',
   })
   image_id: string;
 
   @Index()
-  @Column({ nullable: false, enum: ImageEntryVariant })
+  @Column({ type: 'enum', nullable: false, enum: ImageEntryVariant })
   variant: ImageEntryVariant;
 
-  @Column({ nullable: false })
+  @Column({ type: 'varchar', nullable: false })
   filetype: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'text', nullable: true })
   path: string;
 
   // Binary data

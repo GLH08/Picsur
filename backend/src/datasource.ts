@@ -1,23 +1,22 @@
-import { NestFactory } from '@nestjs/core';
-import {
-    FastifyAdapter,
-    NestFastifyApplication,
-} from '@nestjs/platform-fastify';
+import 'reflect-metadata';
 import { DataSource } from 'typeorm';
-import { TypeOrmConfigService } from './config/early/type-orm.config.service.js';
-import { DatabaseModule } from './database/database.module.js';
+import { EntityList } from './database/entities/index.js';
+import { MigrationList } from './database/migrations/index.js';
 
-async function createDataSource() {
-  // Create nest app
-  const app = await NestFactory.create<NestFastifyApplication>(
-    DatabaseModule,
-    new FastifyAdapter(),
-  );
+const defaultOptions = {
+  type: 'postgres' as const,
+  host: process.env['PICSUR_DB_HOST'] || 'localhost',
+  port: parseInt(process.env['PICSUR_DB_PORT'] || '5432', 10),
+  username: process.env['PICSUR_DB_USERNAME'] || 'postgres',
+  password: process.env['PICSUR_DB_PASSWORD'] || 'postgres',
+  database: process.env['PICSUR_DB_DATABASE'] || 'picsur',
+  synchronize: false,
+  migrationsRun: true,
+  entities: EntityList,
+  migrations: MigrationList,
+  useUTC: true,
+};
 
-  const configFactory = app.get(TypeOrmConfigService);
-  const config = await configFactory.createTypeOrmOptions();
+const dataSource = new DataSource(defaultOptions);
 
-  return new DataSource(config as any);
-}
-
-export default createDataSource();
+export default dataSource;

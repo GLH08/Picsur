@@ -21,6 +21,7 @@ export class EImageBackend implements EImage {
   created: Date;
 
   @Column({
+    type: 'varchar',
     nullable: false,
     default: 'image',
   })
@@ -33,6 +34,7 @@ export class EImageBackend implements EImage {
   expires_at: Date | null;
 
   @Column({
+    type: 'varchar',
     nullable: true,
     select: false,
   })

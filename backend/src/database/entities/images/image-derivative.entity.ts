@@ -26,14 +26,15 @@ export class EImageDerivativeBackend {
 
   @Column({
     name: 'image_id',
+    type: 'uuid',
   })
   image_id: string;
 
   @Index()
-  @Column({ nullable: false })
+  @Column({ type: 'varchar', nullable: false })
   key: string;
 
-  @Column({ nullable: false })
+  @Column({ type: 'varchar', nullable: false })
   filetype: string;
 
   @Column({

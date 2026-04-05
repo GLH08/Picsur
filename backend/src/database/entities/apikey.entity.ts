@@ -26,6 +26,7 @@ export class EApiKeyBackend<
 
   @Index()
   @Column({
+    type: 'varchar',
     nullable: false,
     unique: true,
   })
@@ -37,7 +38,7 @@ export class EApiKeyBackend<
   })
   user: T;
 
-  @Column({ nullable: false })
+  @Column({ type: 'varchar', nullable: false })
   name: string;
 
   @Column({
