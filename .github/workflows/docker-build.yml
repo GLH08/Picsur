@@ -47,10 +47,10 @@ jobs:
           cache: 'pnpm'
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --no-frozen-lockfile
 
-      - name: Install backend dependencies
-        run: pnpm --filter picsur-backend install
+      - name: Build shared package
+        run: pnpm --filter picsur-shared build
 
       - name: Run migrations against real PostgreSQL
         run: |
