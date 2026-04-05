@@ -125,8 +125,11 @@
   font-size: clamp(0.95rem, 1.5vw, 1.2rem);
   line-height: 1;
   letter-spacing: -0.04em;
-  flex-shrink: 0;
+  flex-shrink: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
+  min-width: 0;
 }
 
 .hero-description,
