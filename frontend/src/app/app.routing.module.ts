@@ -5,8 +5,13 @@ import { PRoutes } from './models/dto/picsur-routes.dto';
 const routes: PRoutes = [
   {
     path: '',
+    loadChildren: () =>
+      import('./routes/home/home.module').then((m) => m.HomeModule),
+  },
+  {
+    path: 'records',
     pathMatch: 'full',
-    redirectTo: 'upload',
+    redirectTo: 'user/login',
   },
   {
     path: 'upload',
@@ -52,6 +57,10 @@ const routes: PRoutes = [
     path: 'error',
     loadChildren: () =>
       import('./routes/errors/errors.module').then((m) => m.default),
+  },
+  {
+    path: '**',
+    redirectTo: 'user/login',
   },
 ];
 

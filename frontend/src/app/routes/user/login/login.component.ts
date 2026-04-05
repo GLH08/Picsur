@@ -59,8 +59,8 @@ export class LoginComponent implements OnInit {
     if (HasFailed(user))
       return this.errorService.showFailure(user, this.logger);
 
-    this.errorService.success('Login successful');
-    this.router.navigate(['/']);
+    this.errorService.success('登录成功');
+    await this.router.navigateByUrl('/upload');
   }
 
   async onRegister() {
@@ -69,3 +69,4 @@ export class LoginComponent implements OnInit {
     });
   }
 }
+

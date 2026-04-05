@@ -1,17 +1,28 @@
-<h1>System Settings</h1>
-
-<ng-container *ngFor="let category of preferences | async">
-  <h2 *ngIf="category.category !== null">{{ category.category }}</h2>
-  <div class="row">
-    <ng-container *ngFor="let pref of category.prefs">
-      <pref-option
-        class="col-md-6 col-12"
-        [pref]="pref"
-        [update]="sysPrefService.setPreference.bind(sysPrefService)"
-        [name]="getName(pref.key)"
-        [helpText]="getHelpText(pref.key)"
-        [validator]="getValidator(pref.key)"
-      ></pref-option>
-    </ng-container>
+<div class="settings-subpage media-page-shell sys-pref-page">
+  <div class="images-header media-hero">
+    <div class="header-left">
+      <h1>系统设置</h1>
+    </div>
   </div>
-</ng-container>
+
+  <ng-container *ngFor="let category of preferences | async">
+    <section class="sys-pref-page__section glass-panel">
+      <div class="sys-pref-page__head">
+        <h2>{{ category.category || '未分类' }}</h2>
+      </div>
+      <div class="sys-pref-page__grid">
+        <ng-container *ngFor="let pref of category.prefs">
+          <pref-option
+            class="sys-pref-page__item"
+            [pref]="pref"
+            [update]="sysPrefService.setPreference.bind(sysPrefService)"
+            [name]="getName(pref.key)"
+            [helpText]="getHelpText(pref.key)"
+            [validator]="getValidator(pref.key)"
+          ></pref-option>
+        </ng-container>
+      </div>
+    </section>
+  </ng-container>
+</div>
+

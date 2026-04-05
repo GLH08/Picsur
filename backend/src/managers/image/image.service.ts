@@ -328,6 +328,10 @@ export class ImageManagerService {
     return this.imageFilesService.getFile(imageId, ImageEntryVariant.MASTER);
   }
 
+  public async getMasterLazy(imageId: string): AsyncFailable<EImageFileBackend> {
+    return this.imageFilesService.getFileLazy(imageId, ImageEntryVariant.MASTER);
+  }
+
   public async getMasterFileType(imageId: string): AsyncFailable<FileType> {
     const mime = await this.imageFilesService.getFileTypes(imageId);
     if (HasFailed(mime)) return mime;
@@ -340,6 +344,10 @@ export class ImageManagerService {
 
   public async getOriginal(imageId: string): AsyncFailable<EImageFileBackend> {
     return this.imageFilesService.getFile(imageId, ImageEntryVariant.ORIGINAL);
+  }
+
+  public async getOriginalLazy(imageId: string): AsyncFailable<EImageFileBackend> {
+    return this.imageFilesService.getFileLazy(imageId, ImageEntryVariant.ORIGINAL);
   }
 
   public async getOriginalFileType(imageId: string): AsyncFailable<FileType> {

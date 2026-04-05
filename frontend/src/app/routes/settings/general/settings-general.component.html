@@ -1,181 +1,182 @@
-<h1>常规设置</h1>
-
-<div class="settings-content">
-  <!-- 用户偏好设置 -->
-  <ng-container *ngIf="preferences | async as prefs">
-    <div class="row" *ngIf="prefs && prefs.length > 0">
-      <ng-container *ngFor="let pref of prefs">
-        <pref-option
-          class="col-md-6 col-12"
-          [pref]="pref"
-          [update]="usrPrefService.setPreference.bind(usrPrefService)"
-          [name]="getName(pref.key)"
-          [helpText]="getHelpText(pref.key)"
-        ></pref-option>
-      </ng-container>
+<div class="settings-general-page media-page-shell">
+  <div class="settings-general-page__hero images-header media-hero">
+    <div class="header-left">
+      <h1>常规设置</h1>
     </div>
-  </ng-container>
+  </div>
 
-  <!-- 主题设置 -->
-  <mat-card class="settings-card">
-    <mat-card-header>
-      <mat-icon mat-card-avatar>palette</mat-icon>
-      <mat-card-title>外观设置</mat-card-title>
-    </mat-card-header>
-    <mat-card-content>
-      <div class="setting-item">
-        <div class="setting-info">
-          <span class="setting-label">主题模式</span>
-          <span class="setting-desc">选择您喜欢的界面主题</span>
-        </div>
-        <mat-button-toggle-group [value]="currentTheme" (change)="onThemeChange($event.value)">
-          <mat-button-toggle value="dark">
-            <mat-icon>dark_mode</mat-icon>
-            深色
-          </mat-button-toggle>
-          <mat-button-toggle value="light">
-            <mat-icon>light_mode</mat-icon>
-            浅色
-          </mat-button-toggle>
-        </mat-button-toggle-group>
-      </div>
+  <div class="settings-general-page__layout">
+    <div class="settings-general-page__main">
+      <ng-container *ngIf="preferences | async as prefs">
+        <section class="settings-section glass-panel" *ngIf="prefs && prefs.length > 0">
+          <div class="settings-section__head">
+            <div>
+              <h2>用户偏好</h2>
+              <p>来自后端偏好服务的配置项。</p>
+            </div>
+          </div>
+          <div class="settings-section__pref-grid">
+            <ng-container *ngFor="let pref of prefs">
+              <pref-option
+                class="settings-section__pref-item"
+                [pref]="pref"
+                [update]="usrPrefService.setPreference.bind(usrPrefService)"
+                [name]="getName(pref.key)"
+                [helpText]="getHelpText(pref.key)"
+              ></pref-option>
+            </ng-container>
+          </div>
+        </section>
+      </ng-container>
 
-      <div class="setting-item">
-        <div class="setting-info">
-          <span class="setting-label">每行显示数量</span>
-          <span class="setting-desc">图片列表每行显示的图片数量</span>
+      <section class="settings-section glass-panel">
+        <div class="settings-section__head">
+          <div>
+            <h2>界面与浏览</h2>
+            <p>调整布局密度和外观基线。</p>
+          </div>
         </div>
-        <mat-form-field appearance="outline">
-          <mat-select [value]="settings.gridColumns" (selectionChange)="onGridColumnsChange($event.value)">
-            <mat-option [value]="2">2 列</mat-option>
-            <mat-option [value]="3">3 列</mat-option>
-            <mat-option [value]="4">4 列</mat-option>
-            <mat-option [value]="5">5 列</mat-option>
-            <mat-option [value]="6">6 列</mat-option>
-          </mat-select>
-        </mat-form-field>
-      </div>
-    </mat-card-content>
-  </mat-card>
+        <div class="settings-list">
+          <div class="settings-item">
+            <div class="settings-item__info">
+              <span class="settings-item__label">主题模式</span>
+              <span class="settings-item__desc">当前前端已统一为亮色模式，后续视觉重构均基于这一方向。</span>
+            </div>
+            <div class="settings-item__value settings-item__value--badge">
+              <mat-icon>light_mode</mat-icon>
+              <span>亮色模式</span>
+            </div>
+          </div>
 
-  <!-- 上传设置 -->
-  <mat-card class="settings-card">
-    <mat-card-header>
-      <mat-icon mat-card-avatar>cloud_upload</mat-icon>
-      <mat-card-title>上传设置</mat-card-title>
-    </mat-card-header>
-    <mat-card-content>
-      <div class="setting-item">
-        <div class="setting-info">
-          <span class="setting-label">默认复制格式</span>
-          <span class="setting-desc">上传成功后自动复制的链接格式</span>
+          <div class="settings-item">
+            <div class="settings-item__info">
+              <span class="settings-item__label">每行显示数量</span>
+              <span class="settings-item__desc">控制图片与视频列表的默认网格列数。</span>
+            </div>
+            <mat-form-field appearance="outline">
+              <mat-select [value]="settings.gridColumns" (selectionChange)="onGridColumnsChange($event.value)">
+                <mat-option [value]="2">2 列</mat-option>
+                <mat-option [value]="3">3 列</mat-option>
+                <mat-option [value]="4">4 列</mat-option>
+                <mat-option [value]="5">5 列</mat-option>
+                <mat-option [value]="6">6 列</mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
         </div>
-        <mat-form-field appearance="outline">
-          <mat-select [value]="settings.copyFormat" (selectionChange)="onCopyFormatChange($event.value)">
-            <mat-option value="url">直接链接</mat-option>
-            <mat-option value="markdown">Markdown</mat-option>
-            <mat-option value="html">HTML</mat-option>
-            <mat-option value="bbcode">BBCode</mat-option>
-          </mat-select>
-        </mat-form-field>
-      </div>
+      </section>
 
-      <div class="setting-item">
-        <div class="setting-info">
-          <span class="setting-label">剪贴板自动上传</span>
-          <span class="setting-desc">粘贴图片时自动开始上传</span>
+      <section class="settings-section glass-panel">
+        <div class="settings-section__head">
+          <div>
+            <h2>上传与行为</h2>
+            <p>控制上传完成后的默认动作和交互确认。</p>
+          </div>
         </div>
-        <mat-slide-toggle 
-          [checked]="settings.autoUploadClipboard" 
-          (change)="onAutoUploadClipboardChange($event.checked)"
-        >
-          {{ settings.autoUploadClipboard ? '开启' : '关闭' }}
-        </mat-slide-toggle>
-      </div>
-    </mat-card-content>
-  </mat-card>
+        <div class="settings-list">
+          <div class="settings-item">
+            <div class="settings-item__info">
+              <span class="settings-item__label">默认复制格式</span>
+              <span class="settings-item__desc">上传成功后默认复制的链接类型。</span>
+            </div>
+            <mat-form-field appearance="outline">
+              <mat-select [value]="settings.copyFormat" (selectionChange)="onCopyFormatChange($event.value)">
+                <mat-option value="url">直接链接</mat-option>
+                <mat-option value="markdown">Markdown</mat-option>
+                <mat-option value="html">HTML</mat-option>
+                <mat-option value="bbcode">BBCode</mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
 
-  <!-- 行为设置 -->
-  <mat-card class="settings-card">
-    <mat-card-header>
-      <mat-icon mat-card-avatar>tune</mat-icon>
-      <mat-card-title>行为设置</mat-card-title>
-    </mat-card-header>
-    <mat-card-content>
-      <div class="setting-item">
-        <div class="setting-info">
-          <span class="setting-label">删除确认</span>
-          <span class="setting-desc">删除图片前显示确认对话框</span>
-        </div>
-        <mat-slide-toggle 
-          [checked]="settings.confirmDelete" 
-          (change)="onConfirmDeleteChange($event.checked)"
-        >
-          {{ settings.confirmDelete ? '开启' : '关闭' }}
-        </mat-slide-toggle>
-      </div>
-    </mat-card-content>
-  </mat-card>
+          <div class="settings-item">
+            <div class="settings-item__info">
+              <span class="settings-item__label">剪贴板自动上传</span>
+              <span class="settings-item__desc">粘贴图片后自动开始上传流程。</span>
+            </div>
+            <mat-slide-toggle
+              [checked]="settings.autoUploadClipboard"
+              (change)="onAutoUploadClipboardChange($event.checked)"
+            >
+              {{ settings.autoUploadClipboard ? '开启' : '关闭' }}
+            </mat-slide-toggle>
+          </div>
 
-  <!-- 账户信息 -->
-  <mat-card class="settings-card">
-    <mat-card-header>
-      <mat-icon mat-card-avatar>account_circle</mat-icon>
-      <mat-card-title>账户信息</mat-card-title>
-    </mat-card-header>
-    <mat-card-content>
-      <div class="account-info">
-        <div class="info-row">
-          <span class="info-label">用户名</span>
-          <span class="info-value">{{ username }}</span>
+          <div class="settings-item">
+            <div class="settings-item__info">
+              <span class="settings-item__label">删除确认</span>
+              <span class="settings-item__desc">删除图片或视频前显示确认提示。</span>
+            </div>
+            <mat-slide-toggle
+              [checked]="settings.confirmDelete"
+              (change)="onConfirmDeleteChange($event.checked)"
+            >
+              {{ settings.confirmDelete ? '开启' : '关闭' }}
+            </mat-slide-toggle>
+          </div>
         </div>
-        <div class="info-row" *ngIf="userRoles.length > 0">
-          <span class="info-label">角色</span>
-          <span class="info-value">
+      </section>
+    </div>
+
+    <aside class="settings-general-page__sidebar">
+      <section class="settings-section glass-panel">
+        <div class="settings-section__head">
+          <div>
+            <h2>账户信息</h2>
+            <p>当前登录账户与角色概览。</p>
+          </div>
+        </div>
+        <div class="account-summary">
+          <div class="account-summary__row">
+            <span class="account-summary__label">用户名</span>
+            <strong>{{ username || '未登录' }}</strong>
+          </div>
+          <div class="account-summary__row" *ngIf="userRoles.length > 0">
+            <span class="account-summary__label">角色</span>
             <mat-chip-listbox>
               <mat-chip *ngFor="let role of userRoles">{{ role }}</mat-chip>
             </mat-chip-listbox>
-          </span>
+          </div>
         </div>
-      </div>
-      <div class="account-actions">
-        <button mat-stroked-button routerLink="/user/settings">
-          <mat-icon>settings</mat-icon>
-          修改密码
-        </button>
-      </div>
-    </mat-card-content>
-  </mat-card>
+        <div class="account-summary__actions">
+          <button mat-stroked-button routerLink="/user/settings">
+            <mat-icon>settings</mat-icon>
+            修改密码
+          </button>
+        </div>
+      </section>
 
-  <!-- 快捷操作 -->
-  <mat-card class="settings-card">
-    <mat-card-header>
-      <mat-icon mat-card-avatar>flash_on</mat-icon>
-      <mat-card-title>快捷操作</mat-card-title>
-    </mat-card-header>
-    <mat-card-content>
-      <div class="quick-actions">
-        <button mat-stroked-button routerLink="/settings/apikeys">
-          <mat-icon>key</mat-icon>
-          管理 API 密钥
-        </button>
-        <button mat-stroked-button routerLink="/settings/api-docs">
-          <mat-icon>description</mat-icon>
-          查看 API 文档
-        </button>
-        <button mat-stroked-button routerLink="/images">
-          <mat-icon>photo_library</mat-icon>
-          我的图片
-        </button>
-        <button mat-stroked-button routerLink="/albums">
-          <mat-icon>collections</mat-icon>
-          我的相册
-        </button>
-        <button mat-stroked-button color="warn" (click)="resetSettings()">
-          <mat-icon>restore</mat-icon>
-          重置设置
-        </button>
-      </div>
-    </mat-card-content>
-  </mat-card>
+      <section class="settings-section glass-panel">
+        <div class="settings-section__head">
+          <div>
+            <h2>快捷操作</h2>
+            <p>快速跳转到常用管理入口。</p>
+          </div>
+        </div>
+        <div class="quick-actions-grid">
+          <button mat-stroked-button routerLink="/settings/apikeys">
+            <mat-icon>key</mat-icon>
+            管理 API 密钥
+          </button>
+          <button mat-stroked-button routerLink="/settings/api-docs">
+            <mat-icon>description</mat-icon>
+            查看 API 文档
+          </button>
+          <button mat-stroked-button routerLink="/images/1">
+            <mat-icon>photo_library</mat-icon>
+            我的图片
+          </button>
+          <button mat-stroked-button routerLink="/albums">
+            <mat-icon>collections</mat-icon>
+            我的相册
+          </button>
+          <button mat-stroked-button color="warn" (click)="resetSettings()">
+            <mat-icon>restore</mat-icon>
+            重置设置
+          </button>
+        </div>
+      </section>
+    </aside>
+  </div>
 </div>
+

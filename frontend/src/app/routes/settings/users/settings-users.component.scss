@@ -1,20 +1,25 @@
-mat-table {
-  width: 100%;
+.settings-admin-table {
+  padding: 12px 14px;
+  border: 1px solid var(--border-soft);
 }
 
-.mat-column-actions {
+.settings-admin-table mat-table {
+  width: 100%;
+  background: transparent;
+}
+
+.settings-admin-table .mat-column-actions {
   justify-content: end;
 }
 
-.mat-column-roles {
+.settings-admin-table .mat-column-roles {
   flex-grow: 2;
 }
 
-.icon-red {
-  color: #f44336;
+.settings-admin-table .icon-red {
+  color: var(--danger);
 }
 
-mat-chip-list {
-  margin-top: 8px;
-  margin-bottom: 8px;
+.settings-admin-table mat-chip-listbox {
+  margin-block: 8px;
 }

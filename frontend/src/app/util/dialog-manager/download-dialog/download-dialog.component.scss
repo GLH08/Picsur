@@ -1,5 +1,5 @@
-.confirm-dialog {
-  width: min(460px, 94vw);
+.download-dialog {
+  width: min(440px, 92vw);
   color: var(--text-primary);
 }
 
@@ -11,14 +11,14 @@
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.84), rgba(255, 255, 255, 0.64));
 }
 
-.confirm-dialog__header {
+.download-dialog__header {
   display: flex;
   flex-direction: column;
   gap: 8px;
   padding: 22px;
 }
 
-.confirm-dialog__eyebrow {
+.download-dialog__eyebrow {
   display: inline-flex;
   width: fit-content;
   padding: 6px 10px;
@@ -32,35 +32,30 @@
   text-transform: uppercase;
 }
 
-.confirm-dialog__header h2 {
+.download-dialog__header h2 {
   margin: 0;
-  font-size: 1.25rem;
+  font-size: 1.2rem;
 }
 
-.confirm-dialog__header p {
+.download-dialog__header p {
   margin: 0;
   color: var(--text-secondary);
   line-height: 1.7;
 }
 
-.confirm-dialog__actions {
+.download-dialog__content {
   display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  padding: 18px 22px 22px;
-  border-top: 1px solid var(--border-soft);
+  flex-direction: column;
+  gap: 14px;
+  padding: 0 22px 22px;
 }
 
-.confirm-dialog__button--danger {
-  color: #b42318;
-}
-
-@media (max-width: 560px) {
-  .confirm-dialog__actions {
-    flex-direction: column-reverse;
-  }
-
-  .confirm-dialog__actions button {
-    width: 100%;
-  }
+.download-dialog__progress-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--text-secondary);
+  font-size: 0.88rem;
+  font-weight: 700;
 }

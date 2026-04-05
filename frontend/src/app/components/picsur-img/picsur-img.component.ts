@@ -29,20 +29,24 @@ export class PicsurImgComponent implements OnChanges {
   constructor(private readonly changeDetector: ChangeDetectorRef) {}
 
   ngOnChanges(): void {
-    if (this.isInView && this.imageURL) {
-      this.loadImage();
+    if (!this.imageURL) {
+      this.displayUrl = '';
+      this.state = PicsurImgState.Init;
+      this.changeDetector.markForCheck();
+      return;
     }
+
+    this.loadImage();
   }
 
   private loadImage() {
     if (!this.imageURL) return;
-    
-    // 将 QOI 格式转换为 JPEG 格式以便浏览器直接显示
+
     let url = this.imageURL;
     if (url.includes('.qoi')) {
       url = url.replace('.qoi', '.jpeg');
     }
-    
+
     this.displayUrl = url;
     this.state = PicsurImgState.Loading;
     this.changeDetector.markForCheck();

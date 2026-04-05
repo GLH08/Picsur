@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AsyncFailable, Fail, FT, HasFailed } from 'picsur-shared/dist/types/failable';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { EAlbumBackend } from '../../database/entities/album.entity.js';
 import { EAlbumImageBackend } from '../../database/entities/album-image.entity.js';
+import { EImageBackend } from '../../database/entities/images/image.entity.js';
 
 @Injectable()
 export class AlbumDBService {
@@ -12,6 +13,8 @@ export class AlbumDBService {
     private readonly albumRepo: Repository<EAlbumBackend>,
     @InjectRepository(EAlbumImageBackend)
     private readonly albumImageRepo: Repository<EAlbumImageBackend>,
+    @InjectRepository(EImageBackend)
+    private readonly imageRepo: Repository<EImageBackend>,
   ) {}
 
   public async create(
@@ -43,14 +46,20 @@ export class AlbumDBService {
 
       if (!found) return Fail(FT.NotFound, 'Album not found');
 
-      // 从关联表获取图片 ID 并按 position 排序
+      // 从关联表获取图片 ID 并按 position 排序（过滤已删除的图片）
       const relations = await this.albumImageRepo.find({
         where: { album_id: id },
         order: { position: 'ASC' },
       });
 
       if (relations.length > 0) {
-        found.image_ids = relations.map((r) => r.image_id);
+        const allIds = relations.map((r) => r.image_id);
+        const existingImages = await this.imageRepo.find({
+          where: { id: In(allIds) },
+          select: ['id'],
+        });
+        const existingIds = new Set(existingImages.map((img) => img.id));
+        found.image_ids = allIds.filter((imgId) => existingIds.has(imgId));
       }
 
       return found;
@@ -63,10 +72,10 @@ export class AlbumDBService {
     try {
       const albums = await this.albumRepo.find({
         where: { user_id: userid },
-        order: { updated: 'DESC' } as any,
+        order: { updated: 'DESC' as const },
       });
 
-      // 为每个相册填充关联的图片 ID
+      // 为每个相册填充关联的图片 ID（过滤掉已删除的图片）
       for (const album of albums) {
         const relations = await this.albumImageRepo.find({
           where: { album_id: album.id },
@@ -74,7 +83,14 @@ export class AlbumDBService {
         });
 
         if (relations.length > 0) {
-          album.image_ids = relations.map((r) => r.image_id);
+          const allIds = relations.map((r) => r.image_id);
+          // 仅保留实际存在的图片 ID
+          const existingImages = await this.imageRepo.find({
+            where: { id: In(allIds) },
+            select: ['id'],
+          });
+          const existingIds = new Set(existingImages.map((img) => img.id));
+          album.image_ids = allIds.filter((id) => existingIds.has(id));
         }
       }
 

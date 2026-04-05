@@ -1,10 +1,18 @@
-<div class="dialog-text">
-  <div class="row">
-    <div class="col-12">
-      <h1>Customize Image</h1>
+<div class="view-dialog media-dialog-shell">
+  <div class="view-dialog__header">
+    <div class="view-dialog__header-copy">
+      <span class="view-dialog__eyebrow">Customize</span>
+      <h2>自定义图片</h2>
+      <p>调整格式、尺寸和处理参数，实时生成一条可复制的自定义访问链接。</p>
     </div>
-    <div class="col-xl-4 col-12">
-      <mat-form-field subscriptSizing="dynamic">
+    <button mat-icon-button (click)="close()" aria-label="关闭">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <div class="view-dialog__content">
+    <section class="view-dialog__panel view-dialog__panel--grid">
+      <mat-form-field subscriptSizing="dynamic" appearance="outline">
         <mat-label>Format</mat-label>
         <mat-select [(value)]="selectedFormat">
           <mat-option *ngFor="let format of formatOptions" [value]="format.key">
@@ -12,10 +20,8 @@
           </mat-option>
         </mat-select>
       </mat-form-field>
-    </div>
 
-    <div class="col-xl-2 col-md-3 col-sm-6 col-12">
-      <mat-form-field [matTooltip]="sizeTooltip" subscriptSizing="dynamic">
+      <mat-form-field [matTooltip]="sizeTooltip" subscriptSizing="dynamic" appearance="outline">
         <mat-label>Height</mat-label>
         <input
           matInput
@@ -25,9 +31,7 @@
           [(ngModel)]="height"
         />
       </mat-form-field>
-    </div>
 
-    <div class="col-xl-2 col-md-3 col-sm-6 col-12">
       <mat-form-field
         subscriptSizing="dynamic"
         appearance="outline"
@@ -36,10 +40,8 @@
         <mat-label>Width</mat-label>
         <input matInput type="number" min="0" max="32768" [(ngModel)]="width" />
       </mat-form-field>
-    </div>
 
-    <div class="col-xl-2 col-md-3 col-sm-6 col-12">
-      <mat-form-field subscriptSizing="dynamic">
+      <mat-form-field subscriptSizing="dynamic" appearance="outline">
         <mat-label>Rotation</mat-label>
         <mat-select [(value)]="rotate">
           <mat-option *ngFor="let option of rotationOptions" [value]="option">
@@ -47,54 +49,44 @@
           </mat-option>
         </mat-select>
       </mat-form-field>
-    </div>
 
-    <div class="col-xl-2 col-md-3 col-sm-6 col-12">
-      <mat-form-field subscriptSizing="dynamic">
+      <mat-form-field subscriptSizing="dynamic" appearance="outline">
         <mat-label>Quality %</mat-label>
         <input matInput type="number" min="0" max="100" [(ngModel)]="quality" />
       </mat-form-field>
-    </div>
+    </section>
 
-    <div class="col-xl-4 col-sm-6 col-12">
-      <mat-slide-toggle [(ngModel)]="flipx">
-        Flip image horizontally
-      </mat-slide-toggle>
-    </div>
+    <section class="view-dialog__panel">
+      <div class="view-dialog__section-head">
+        <h3>图像处理选项</h3>
+        <span>Toggle</span>
+      </div>
 
-    <div class="col-xl-4 col-sm-6 col-12">
-      <mat-slide-toggle [(ngModel)]="flipy">
-        Flip image vertically
-      </mat-slide-toggle>
-    </div>
+      <div class="view-dialog__toggle-grid">
+        <mat-slide-toggle [(ngModel)]="flipx">Flip image horizontally</mat-slide-toggle>
+        <mat-slide-toggle [(ngModel)]="flipy">Flip image vertically</mat-slide-toggle>
+        <mat-slide-toggle [(ngModel)]="shrinkonly">Shrink only</mat-slide-toggle>
+        <mat-slide-toggle [(ngModel)]="greyscale">Greyscale</mat-slide-toggle>
+        <mat-slide-toggle [(ngModel)]="noalpha">Disable transparency</mat-slide-toggle>
+        <mat-slide-toggle [(ngModel)]="negative">Negative</mat-slide-toggle>
+      </div>
+    </section>
 
-    <div class="col-xl-4 col-sm-6 col-12">
-      <mat-slide-toggle [(ngModel)]="shrinkonly">Shrink only</mat-slide-toggle>
-    </div>
+    <section class="view-dialog__panel">
+      <div class="view-dialog__section-head">
+        <h3>自定义链接</h3>
+        <span>Ready to copy</span>
+      </div>
 
-    <div class="col-xl-4 col-sm-6 col-12">
-      <mat-slide-toggle [(ngModel)]="greyscale">Greyscale</mat-slide-toggle>
-    </div>
-
-    <div class="col-xl-4 col-sm-6 col-12">
-      <mat-slide-toggle [(ngModel)]="noalpha">
-        Disable transparancy
-      </mat-slide-toggle>
-    </div>
-
-    <div class="col-xl-4 col-sm-6 col-12">
-      <mat-slide-toggle [(ngModel)]="negative">Negative</mat-slide-toggle>
-    </div>
-
-    <div class="col-12">
       <copy-field
         subscriptSizing="dynamic"
         label="Custom Image URL"
         [value]="getURL()"
       ></copy-field>
-    </div>
+    </section>
   </div>
-  <div class="dialog-buttons">
-    <button mat-flat-button (click)="close()">CLOSE</button>
+
+  <div class="view-dialog__actions">
+    <button mat-button (click)="close()">关闭</button>
   </div>
 </div>

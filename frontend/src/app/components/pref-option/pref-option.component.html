@@ -1,100 +1,35 @@
-<ng-container *ngIf="type === 'string'">
-  <div class="y-center">
-    <mat-form-field appearance="outline" color="accent">
-      <mat-label>{{ name }}</mat-label>
-      <input
-        matInput
-        autocorrect="off"
-        autocapitalize="none"
-        placeholder="Empty"
-        [formControl]="formControl"
-      />
-      <!-- show tooltip on press -->
-      <button
-        mat-icon-button
-        matSuffix
-        (click)="tooltip.show()"
-        *ngIf="helpText !== ''"
-      >
-        <mat-icon
-          matSuffix
-          fontSet="material-icons-outlined"
-          #tooltip="matTooltip"
-          [matTooltip]="helpText"
-          matTooltipPosition="left"
-          matTooltipHideDelay="0"
-        >
-          help_outline
-        </mat-icon>
-      </button>
-      <mat-error *ngIf="formControl.invalid">
-        {{ getErrorMessage() }}
-      </mat-error>
-    </mat-form-field>
+<div class="pref-card">
+  <div class="pref-card__head">
+    <div>
+      <h3>{{ name }}</h3>
+      <p *ngIf="helpText !== ''">{{ helpText }}</p>
+    </div>
   </div>
-</ng-container>
 
-<ng-container *ngIf="type === 'number'">
-  <div class="y-center">
-    <mat-form-field appearance="outline" color="accent">
+  <ng-container *ngIf="type === 'string'">
+    <mat-form-field appearance="outline" color="primary">
       <mat-label>{{ name }}</mat-label>
-      <input
-        matInput
-        type="number"
-        placeholder="Empty"
-        [formControl]="formControl"
-      />
-      <button
-        mat-icon-button
-        matSuffix
-        (click)="tooltip.show()"
-        *ngIf="helpText !== ''"
-      >
-        <mat-icon
-          matSuffix
-          fontSet="material-icons-outlined"
-          #tooltip="matTooltip"
-          [matTooltip]="helpText"
-          matTooltipPosition="left"
-          matTooltipHideDelay="0"
-        >
-          help_outline
-        </mat-icon>
-      </button>
-      <mat-error *ngIf="formControl.invalid">
-        {{ getErrorMessage() }}
-      </mat-error>
+      <input matInput autocorrect="off" autocapitalize="none" placeholder="Empty" [formControl]="formControl" />
+      <mat-error *ngIf="formControl.invalid">{{ getErrorMessage() }}</mat-error>
     </mat-form-field>
-  </div>
-</ng-container>
+  </ng-container>
 
-<ng-container *ngIf="type === 'boolean'">
-  <div class="y-center">
-    <mat-form-field appearance="outline" color="accent">
+  <ng-container *ngIf="type === 'number'">
+    <mat-form-field appearance="outline" color="primary">
+      <mat-label>{{ name }}</mat-label>
+      <input matInput type="number" placeholder="Empty" [formControl]="formControl" />
+      <mat-error *ngIf="formControl.invalid">{{ getErrorMessage() }}</mat-error>
+    </mat-form-field>
+  </ng-container>
+
+  <ng-container *ngIf="type === 'boolean'">
+    <mat-form-field appearance="outline" color="primary">
       <mat-label>{{ name }}</mat-label>
       <mat-select [formControl]="formControl" placeholder="Empty">
         <mat-option [value]="false">No</mat-option>
         <mat-option [value]="true">Yes</mat-option>
       </mat-select>
-      <button
-        mat-icon-button
-        matSuffix
-        (click)="tooltip.show()"
-        *ngIf="helpText !== ''"
-      >
-        <mat-icon
-          fontSet="material-icons-outlined"
-          #tooltip="matTooltip"
-          [matTooltip]="helpText"
-          matTooltipPosition="left"
-          matTooltipHideDelay="0"
-        >
-          help_outline
-        </mat-icon>
-      </button>
-      <mat-error *ngIf="formControl.invalid">
-        {{ getErrorMessage() }}
-      </mat-error>
+      <mat-error *ngIf="formControl.invalid">{{ getErrorMessage() }}</mat-error>
     </mat-form-field>
-  </div>
-</ng-container>
+  </ng-container>
+</div>

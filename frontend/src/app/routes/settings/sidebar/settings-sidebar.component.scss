@@ -1,70 +1,66 @@
 :host {
   display: block;
-  padding: 1rem 0;
 }
 
-mat-nav-list {
-  padding: 0;
+.settings-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 10px 0;
 }
 
-[mat-subheader] {
-  font-size: 0.75rem;
-  font-weight: 600;
+.settings-sidebar__group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.settings-sidebar__label {
+  padding: 0 12px;
+  color: var(--text-tertiary);
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: var(--sidebar-subheader-color, rgba(255, 255, 255, 0.5));
-  padding: 1rem 1rem 0.5rem;
-  margin-top: 0.5rem;
-
-  &:first-child {
-    margin-top: 0;
-  }
 }
 
-a[mat-list-item] {
-  margin: 0.25rem 0.5rem;
-  border-radius: 8px;
-  transition: background 0.2s, color 0.2s;
-
-  &:hover {
-    background: var(--sidebar-hover-bg, rgba(255, 255, 255, 0.08));
-  }
-
-  &.active {
-    background: rgba(103, 58, 183, 0.2);
-    color: #7c4dff;
-
-    mat-icon {
-      color: #7c4dff;
-    }
-  }
-
-  mat-icon {
-    margin-right: 1rem;
-    color: var(--sidebar-icon-color, rgba(255, 255, 255, 0.7));
-    transition: color 0.2s;
-  }
-
-  span {
-    font-weight: 500;
-  }
+.settings-sidebar__link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 48px;
+  padding: 0 14px;
+  border-radius: 18px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: background var(--duration-fast) var(--ease-standard), transform var(--duration-fast) var(--ease-standard), color var(--duration-fast) var(--ease-standard), border-color var(--duration-fast) var(--ease-standard);
+  border: 1px solid transparent;
 }
 
-mat-divider {
-  margin: 0.75rem 1rem;
-  opacity: 0.3;
+.settings-sidebar__link:hover {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.44);
+  border-color: rgba(255, 255, 255, 0.72);
+  color: var(--text-primary);
 }
 
-// 深色主题变量（默认）
-:host-context(body:not(.theme-light)) {
-  --sidebar-subheader-color: rgba(255, 255, 255, 0.5);
-  --sidebar-hover-bg: rgba(255, 255, 255, 0.08);
-  --sidebar-icon-color: rgba(255, 255, 255, 0.7);
+.settings-sidebar__link.is-active {
+  background: linear-gradient(180deg, rgba(228, 238, 252, 0.94), rgba(240, 246, 253, 0.8));
+  border-color: rgba(35, 120, 255, 0.24);
+  color: var(--accent-primary-strong);
+  box-shadow: 0 16px 36px rgba(35, 120, 255, 0.12);
 }
 
-// 亮色主题变量
-:host-context(.theme-light) {
-  --sidebar-subheader-color: rgba(0, 0, 0, 0.54);
-  --sidebar-hover-bg: rgba(0, 0, 0, 0.04);
-  --sidebar-icon-color: rgba(0, 0, 0, 0.54);
+.settings-sidebar__link mat-icon {
+  color: inherit;
+}
+
+.settings-sidebar__link span {
+  font-weight: 700;
+}
+
+.settings-sidebar__divider {
+  height: 1px;
+  margin: 0 8px;
+  background: linear-gradient(90deg, transparent, rgba(122, 142, 168, 0.26), transparent);
 }

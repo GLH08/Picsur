@@ -56,7 +56,7 @@ export class ViewSpeeddialComponent implements OnInit {
     private readonly utilService: UtilService,
     private readonly userService: UserService,
     private readonly router: Router,
-  ) { }
+  ) {}
 
   ngOnInit(): void {
     this.subscribePermissions();
@@ -89,11 +89,24 @@ export class ViewSpeeddialComponent implements OnInit {
     this.canManage = false;
   }
 
+  private getOutputFormat(): string | null {
+    if (this.selectedFormat === 'original') {
+      return null;
+    }
+
+    return this.selectedFormat;
+  }
+
   download() {
     if (this.image === null) return;
 
     this.downloadService.downloadFile(
-      this.imageService.GetImageURL(this.image?.id, this.selectedFormat, false, this.image?.created),
+      this.imageService.GetImageURL(
+        this.image.id,
+        this.getOutputFormat(),
+        false,
+        this.image.created,
+      ),
     );
   }
 
@@ -101,7 +114,12 @@ export class ViewSpeeddialComponent implements OnInit {
     if (this.image === null) return;
 
     this.downloadService.shareFile(
-      this.imageService.GetImageURL(this.image?.id, this.selectedFormat, false, this.image?.created),
+      this.imageService.GetImageURL(
+        this.image.id,
+        this.getOutputFormat(),
+        false,
+        this.image.created,
+      ),
     );
   }
 
@@ -140,14 +158,10 @@ export class ViewSpeeddialComponent implements OnInit {
 
     const options: CustomizeDialogData = {
       imageID: this.image.id,
-      selectedFormat: this.selectedFormat,
+      selectedFormat: this.getOutputFormat() ?? ImageFileType.JPEG,
       formatOptions: this.utilService.getBaseFormatOptions(),
       created: this.image.created,
     };
-
-    if (options.selectedFormat === 'original') {
-      options.selectedFormat = ImageFileType.JPEG;
-    }
 
     await this.dialogService.showCustomDialog(
       CustomizeDialogComponent,

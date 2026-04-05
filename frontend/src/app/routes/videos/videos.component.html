@@ -1,34 +1,53 @@
-<div class="picsur-videos">
+<div class="picsur-videos media-page-shell">
   <mat-progress-spinner *ngIf="videos === null"></mat-progress-spinner>
 
-  <h2 class="text-center" *ngIf="videosSub !== null && totalCount <= 0">
-    没有可显示的视频
-  </h2>
+  <div class="empty-state" *ngIf="videosSub !== null && totalCount <= 0">
+    <mat-icon>movie</mat-icon>
+    <h2>还没有视频</h2>
+  </div>
 
-  <h2 class="text-center" *ngIf="videosSub !== null && totalCount > 0 && filteredCount <= 0 && searchQuery">
-    没有找到匹配的视频
-  </h2>
+  <div class="empty-state" *ngIf="videosSub !== null && totalCount > 0 && filteredCount <= 0 && searchQuery">
+    <mat-icon>travel_explore</mat-icon>
+    <h2>没有匹配结果</h2>
+  </div>
 
   <ng-container *ngIf="videosSub !== null && totalCount > 0">
-    <div class="videos-header">
+    <div class="videos-header media-hero">
       <div class="header-left">
         <h1>我的视频</h1>
-        <span class="video-count" *ngIf="!searchQuery">共 {{ totalCount }} 个</span>
-        <span class="video-count" *ngIf="searchQuery">找到 {{ filteredCount }} / {{ totalCount }} 个</span>
+        <span class="header-separator">·</span>
+        <span class="header-count" *ngIf="!selectionMode">库内 {{ totalCount }} 个</span>
+        <span class="header-count selection-active" *ngIf="selectionMode">已选择 {{ selectedCount }} 个</span>
       </div>
       <div class="header-actions">
-        <button mat-icon-button (click)="toggleSearch()" [class.active]="searchActive">
-          <mat-icon>search</mat-icon>
-        </button>
-        <button mat-stroked-button (click)="toggleSelectionMode()">
-          <mat-icon>{{ selectionMode ? 'close' : 'check_box' }}</mat-icon>
-          {{ selectionMode ? '取消选择' : '选择' }}
-        </button>
+        <ng-container *ngIf="!selectionMode">
+          <button mat-icon-button (click)="toggleSearch()" [class.active]="searchActive" aria-label="切换搜索">
+            <mat-icon>search</mat-icon>
+          </button>
+          <button mat-stroked-button (click)="toggleSelectionMode()">
+            <mat-icon>check_box</mat-icon>
+            选择
+          </button>
+        </ng-container>
+        <ng-container *ngIf="selectionMode">
+          <button mat-icon-button (click)="selectAll()" title="全选">
+            <mat-icon>select_all</mat-icon>
+          </button>
+          <button mat-icon-button (click)="deselectAll()" title="取消全选">
+            <mat-icon>deselect</mat-icon>
+          </button>
+          <button mat-icon-button color="warn" (click)="deleteSelected()" [disabled]="selectedCount === 0" title="批量删除">
+            <mat-icon>delete</mat-icon>
+          </button>
+          <button mat-stroked-button (click)="toggleSelectionMode()" class="cancel-select-btn">
+            <mat-icon>close</mat-icon>
+            取消
+          </button>
+        </ng-container>
       </div>
     </div>
 
-    <!-- 搜索框 -->
-    <div class="search-bar" *ngIf="searchActive">
+    <div class="search-bar" *ngIf="searchActive && !selectionMode">
       <mat-form-field appearance="outline" class="search-field">
         <mat-label>搜索视频</mat-label>
         <input
@@ -45,43 +64,37 @@
       </mat-form-field>
     </div>
 
-    <!-- 选择模式工具栏 -->
-    <div class="selection-toolbar" *ngIf="selectionMode">
-      <div class="selection-info">已选择 {{ selectedCount }} 个</div>
-      <div class="selection-actions">
-        <button mat-button (click)="selectAll()">全选</button>
-        <button mat-button (click)="deselectAll()">取消全选</button>
-        <button mat-stroked-button color="warn" (click)="deleteSelected()" [disabled]="selectedCount === 0">
-          <mat-icon>delete</mat-icon>
-          批量删除
-        </button>
-      </div>
-    </div>
-
-    <!-- 按时间分组展示 -->
     <div class="video-groups">
-      <div class="video-group" *ngFor="let group of groupedVideos">
-        <div class="group-header" (click)="toggleGroup(group)">
-          <mat-icon>{{ group.collapsed ? 'expand_more' : 'expand_less' }}</mat-icon>
-          <span class="group-title">{{ group.title }}</span>
+      <div class="video-group" *ngFor="let group of groupedVideos; trackBy: trackByGroup">
+        <div class="group-header" (click)="toggleGroup(group.key, $event)">
+          <div class="group-heading">
+            <mat-icon>{{ group.collapsed ? 'expand_more' : 'expand_less' }}</mat-icon>
+            <span class="group-title">{{ group.title }}</span>
+          </div>
           <span class="group-count">{{ group.videos.length }} 个</span>
         </div>
 
         <div class="video-grid" *ngIf="!group.collapsed" [style.--columns]="columns">
           <div
             class="video-item"
-            *ngFor="let video of group.videos"
+            *ngFor="let video of group.videos; trackBy: trackByVideo"
             [class.selected]="isSelected(video)"
             (click)="handleVideoClick(video, $event)"
             (contextmenu)="openContextMenu($event, video)"
           >
-            <!-- 选择复选框 -->
-            <div
+            <button
+              type="button"
               class="select-checkbox"
               [class.visible]="selectionMode || isSelected(video)"
               (click)="toggleSelect(video, $event)"
+              [attr.aria-label]="isSelected(video) ? '取消选择视频' : '选择视频'"
             >
               <mat-icon>{{ isSelected(video) ? 'check_box' : 'check_box_outline_blank' }}</mat-icon>
+            </button>
+
+            <div class="media-badge">
+              <mat-icon>play_circle</mat-icon>
+              <span>VIDEO</span>
             </div>
 
             <div class="video-wrapper">
@@ -93,9 +106,18 @@
               />
               <div class="video-overlay">
                 <mat-icon>play_circle_filled</mat-icon>
+                <span>播放预览</span>
               </div>
             </div>
-            <div class="video-name" *ngIf="video.file_name">{{ video.file_name }}</div>
+
+            <div class="media-card-footer">
+              <div class="media-card-title">{{ video.file_name || '未命名视频' }}</div>
+              <div class="media-card-subtitle">
+                <span>{{ video.created | date:'yyyy-MM-dd HH:mm' }}</span>
+                <span class="media-card-dot"></span>
+                <span>#{{ video.id | slice:0:8 }}</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -105,8 +127,8 @@
   </ng-container>
 </div>
 
-<!-- 右键菜单 -->
 <div
+  #contextMenu
   class="picsur-context-menu"
   *ngIf="contextMenuVisible"
   [style.left.px]="contextMenuX"
@@ -140,8 +162,7 @@
   </button>
 </div>
 
-<!-- 全屏视频播放器 -->
-<ng-container *ngIf="viewerOpen">
+<ng-template #viewerTemplate>
   <div class="video-viewer">
     <div class="video-viewer-backdrop" (click)="closeViewer()"></div>
 
@@ -158,32 +179,27 @@
       </video>
     </div>
 
-    <!-- 左右切换按钮 -->
     <button class="video-viewer-nav video-viewer-prev" (click)="viewerPrev()" title="上一个">
       <mat-icon>chevron_left</mat-icon>
     </button>
     <button class="video-viewer-nav video-viewer-next" (click)="viewerNext()" title="下一个">
       <mat-icon>chevron_right</mat-icon>
     </button>
-
-    <!-- 关闭按钮 -->
     <button class="video-viewer-close" (click)="closeViewer()" title="关闭">
       <mat-icon>close</mat-icon>
     </button>
 
-    <!-- 底部信息栏 -->
     <div class="video-viewer-info">
       <div class="video-viewer-info-left">
-        <div class="video-name" *ngIf="viewerVideo?.file_name">{{ viewerVideo?.file_name }}</div>
+        <div class="viewer-name" *ngIf="viewerVideo?.file_name">{{ viewerVideo?.file_name }}</div>
         <div class="video-meta">
           {{ viewerIndex + 1 }} / {{ videos?.length }} · {{ viewerVideo?.created | date:'yyyy-MM-dd HH:mm' }}
         </div>
       </div>
     </div>
   </div>
-</ng-container>
+</ng-template>
 
-<!-- 标签管理侧边面板 -->
 <div class="picsur-tag-panel-overlay" *ngIf="tagPanelOpen" (click)="closeTagPanel()">
   <div class="tag-panel" (click)="$event.stopPropagation()">
     <div class="tag-panel-header">
@@ -197,12 +213,10 @@
     </div>
 
     <div class="tag-panel-body" *ngIf="tagPanelVideo">
-      <!-- 视频预览 -->
       <div class="tag-panel-preview">
         <img [src]="getThumbnailUrl(tagPanelVideo)" [alt]="tagPanelVideo.file_name || '视频'" />
       </div>
 
-      <!-- 视频信息 -->
       <div class="tag-panel-info">
         <div class="info-row">
           <mat-icon>fingerprint</mat-icon>
@@ -214,7 +228,6 @@
         </div>
       </div>
 
-      <!-- 标签显示/编辑 -->
       <div class="tag-panel-content">
         <div class="tag-view-mode" *ngIf="!tagEditMode">
           <div class="current-tag" [class.has-tag]="hasTag(tagPanelVideo)">

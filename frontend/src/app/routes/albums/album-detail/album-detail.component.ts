@@ -1,4 +1,4 @@
-import { Component, HostListener, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit, ViewChild, TemplateRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AutoUnsubscribe } from 'ngx-auto-unsubscribe-decorator';
 import { SupportedVideoFileTypes } from 'picsur-shared/dist/dto/mimes.dto';
@@ -10,6 +10,7 @@ import { ImageService } from '../../../services/api/image.service';
 import { ErrorService } from '../../../util/error-manager/error.service';
 import { Logger } from '../../../services/logger/logger.service';
 import { DialogService } from '../../../util/dialog-manager/dialog.service';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 
 // 常量定义
 const API_LIMITS = {
@@ -37,6 +38,9 @@ export class AlbumDetailComponent implements OnInit {
   viewerIndex = 0;
   viewerVideoUrl = '';
 
+  @ViewChild('viewerTemplate') viewerTemplate!: TemplateRef<any>;
+  private dialogRef: MatDialogRef<any> | null = null;
+
   // 图片格式缓存
   private imageFormatCache = new Map<string, string>();
   // 视频类型缓存
@@ -51,6 +55,7 @@ export class AlbumDetailComponent implements OnInit {
     private readonly imageService: ImageService,
     private readonly errorService: ErrorService,
     private readonly dialogService: DialogService,
+    private readonly dialog: MatDialog,
   ) {}
 
   ngOnInit() {
@@ -328,7 +333,6 @@ export class AlbumDetailComponent implements OnInit {
     }
   }
 
-  // 打开视频查看器
   async openVideoViewer(image: EImage) {
     this.viewerImage = image;
     this.viewerIndex = this.images.findIndex((img) => img.id === image.id);
@@ -336,6 +340,20 @@ export class AlbumDetailComponent implements OnInit {
     document.body.style.overflow = 'hidden';
     // 获取视频 URL
     this.viewerVideoUrl = await this.getMediaUrl(image);
+
+    // Mount using CDK Overlay explicitly bypassing CSS containing blocks
+    if (this.viewerTemplate && !this.dialogRef) {
+      this.dialogRef = this.dialog.open(this.viewerTemplate, {
+        panelClass: 'picsur-viewer-overlay-dialog',
+        hasBackdrop: false,
+        disableClose: true,
+        maxWidth: '100vw',
+        maxHeight: '100vh',
+        width: '100vw',
+        height: '100vh',
+        autoFocus: false
+      });
+    }
   }
 
   closeViewer() {
@@ -343,6 +361,10 @@ export class AlbumDetailComponent implements OnInit {
     this.viewerImage = null;
     this.viewerVideoUrl = '';
     document.body.style.overflow = '';
+    if (this.dialogRef) {
+      this.dialogRef.close();
+      this.dialogRef = null;
+    }
   }
 
   async viewerPrev() {

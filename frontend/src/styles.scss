@@ -1,1 +1,11 @@
 @use './scss';
+
+.picsur-viewer-overlay-dialog .mdc-dialog__surface {
+  background: transparent !important;
+  box-shadow: none !important;
+  overflow: visible !important;
+}
+
+.picsur-viewer-overlay-dialog .mat-mdc-dialog-container .mdc-dialog__surface {
+  padding: 0 !important;
+}

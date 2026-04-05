@@ -21,7 +21,7 @@ export class SnackBarService {
     duration: number | undefined | null = null,
   ) {
     this.snackBar.open(message, '', {
-      panelClass: ['mat-toolbar', 'snackbar', type],
+      panelClass: ['snackbar', type],
       verticalPosition:
         this.bootstrap.screenSizeSnapshot() > BSScreenSize.xs
           ? 'bottom'

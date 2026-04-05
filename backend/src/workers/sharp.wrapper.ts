@@ -51,7 +51,7 @@ export class SharpWrapper {
       timeout: this.instance_timeout,
       env: {
         MEMORY_LIMIT_MB: this.memory_limit.toString(),
-        NODE_OPTIONS: '--no-warnings',
+        NODE_OPTIONS: `--no-warnings --max-old-space-size=${this.memory_limit}`,
       },
       stdio: 'overlapped',
     });

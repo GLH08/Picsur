@@ -1,72 +1,56 @@
-<div class="content-border padded">
-  <div class="container centered">
-    <form class="row" (ngSubmit)="onSubmit()">
-      <div class="col-12 py-2">
-        <img
-          src="/assets/branding/text/picsur_light.svg"
-          alt="Picsur Text Logo"
+<div class="auth-page">
+  <div class="auth-card">
+    <div class="auth-card__brand auth-card__brand--compact">
+      <div class="auth-card__logo">
+        <img class="auth-card__logo-mark" src="/assets/branding/logo/picsur.svg" alt="Picsur Logo" />
+        <img class="auth-card__logo-text" src="/assets/branding/text/picsur_dark.svg" alt="Picsur" />
+      </div>
+      <h1>登录</h1>
+    </div>
+
+    <form class="auth-card__form" (ngSubmit)="onSubmit()">
+      <mat-form-field appearance="outline">
+        <mat-label>用户名</mat-label>
+        <input
+          matInput
+          type="text"
+          [formControl]="model.username"
+          name="username"
+          autocorrect="off"
+          autocapitalize="none"
+          required
         />
-      </div>
+        <mat-error *ngIf="model.username.errors">
+          {{ model.usernameError }}
+        </mat-error>
+      </mat-form-field>
 
-      <div class="col-12 py-2">
-        <h1>登录到您的账户</h1>
-      </div>
+      <mat-form-field appearance="outline">
+        <mat-label>密码</mat-label>
+        <input
+          matInput
+          type="password"
+          [formControl]="model.password"
+          name="password"
+          required
+        />
+        <mat-error *ngIf="model.password.errors">
+          {{ model.passwordError }}
+        </mat-error>
+      </mat-form-field>
 
-      <div class="col-12 py-2">
-        <mat-form-field appearance="outline">
-          <mat-label>用户名</mat-label>
-          <input
-            matInput
-            type="text"
-            [formControl]="model.username"
-            name="username"
-            autocorrect="off"
-            autocapitalize="none"
-            required
-          />
-          <mat-error *ngIf="model.username.errors">
-            {{ model.usernameError }}
-          </mat-error>
-        </mat-form-field>
-      </div>
-
-      <div class="col-12 py-2">
-        <mat-form-field appearance="outline">
-          <mat-label>密码</mat-label>
-          <input
-            matInput
-            type="password"
-            [formControl]="model.password"
-            name="password"
-            required
-          />
-          <mat-error *ngIf="model.password.errors">
-            {{ model.passwordError }}
-          </mat-error>
-        </mat-form-field>
-      </div>
-
-      <div class="col-12 py-2">
-        <button
-          mat-raised-button
-          color="primary"
-          class="mx-2"
-          type="submit"
-          [disabled]="loading"
-        >
+      <div class="auth-card__actions">
+        <button mat-raised-button color="primary" type="submit" [disabled]="loading">
           {{ loading ? '加载中...' : '登录' }}
         </button>
-        <button
-          *ngIf="showRegister"
-          mat-flat-button
-          color="accent"
-          class="mx-2"
-          (click)="onRegister()"
-          type="button"
-        >
+        <button *ngIf="showRegister" mat-stroked-button type="button" (click)="onRegister()">
           注册
         </button>
       </div>
     </form>
+
+    <div class="auth-card__footer" *ngIf="showRegister">
+      还没有账户？<a (click)="onRegister()">创建新账户</a>
+    </div>
   </div>
 </div>

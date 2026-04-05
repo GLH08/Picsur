@@ -83,44 +83,45 @@ export class ImageConverterService {
     if (HasFailed(hasStarted)) return hasStarted;
 
     // Do modifications
+    const isShrinkOnly = options.shrinkonly === true || String(options.shrinkonly) === 'yes' || String(options.shrinkonly) === 'true';
+
     if (options.height || options.width) {
       if (options.height && options.width) {
         sharpWrapper.operation('resize', {
-          width: options.width,
-          height: options.height,
+          width: options.width ? Number(options.width) : undefined,
+          height: options.height ? Number(options.height) : undefined,
           fit: 'fill',
           kernel: 'cubic',
-          withoutEnlargement: options.shrinkonly,
+          withoutEnlargement: isShrinkOnly,
         });
       } else {
         sharpWrapper.operation('resize', {
-          width: options.width,
-          height: options.height,
+          width: options.width ? Number(options.width) : undefined,
+          height: options.height ? Number(options.height) : undefined,
           fit: 'inside',
           kernel: 'cubic',
-
-          withoutEnlargement: options.shrinkonly,
+          withoutEnlargement: isShrinkOnly,
         });
       }
     }
     if (options.rotate) {
-      sharpWrapper.operation('rotate', options.rotate, {
+      sharpWrapper.operation('rotate', Number(options.rotate), {
         background: 'transparent',
       });
     }
-    if (options.flipx) {
+    if (options.flipx === true || String(options.flipx) === 'true') {
       sharpWrapper.operation('flop');
     }
-    if (options.flipy) {
+    if (options.flipy === true || String(options.flipy) === 'true') {
       sharpWrapper.operation('flip');
     }
-    if (options.noalpha) {
+    if (options.noalpha === true || String(options.noalpha) === 'true') {
       sharpWrapper.operation('removeAlpha');
     }
-    if (options.negative) {
+    if (options.negative === true || String(options.negative) === 'true') {
       sharpWrapper.operation('negate');
     }
-    if (options.greyscale) {
+    if (options.greyscale === true || String(options.greyscale) === 'true') {
       sharpWrapper.operation('greyscale');
     }
 

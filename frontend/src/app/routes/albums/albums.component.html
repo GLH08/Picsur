@@ -1,18 +1,22 @@
-<div class="albums-container">
-  <div class="albums-header">
+<div class="albums-container media-page-shell">
+  <div class="albums-header media-hero">
     <div class="header-left">
       <h1>我的相册</h1>
-      <span class="album-count" *ngIf="albums.length > 0">共 {{ albums.length }} 个</span>
+      <div class="hero-stats" *ngIf="albums.length > 0">
+        <span class="hero-chip">共 {{ albums.length }} 个相册</span>
+      </div>
     </div>
-    <button mat-raised-button color="primary" (click)="openCreateDialog()">
-      <mat-icon>add</mat-icon>
-      新建相册
-    </button>
+    <div class="header-actions">
+      <button mat-raised-button color="primary" (click)="openCreateDialog()">
+        <mat-icon>add</mat-icon>
+        新建相册
+      </button>
+    </div>
   </div>
 
   <div class="loading-container" *ngIf="loading">
     <mat-progress-bar mode="indeterminate"></mat-progress-bar>
-    <p>加载中...</p>
+    <p>正在加载...</p>
   </div>
 
   <div class="albums-grid" *ngIf="!loading && albums.length > 0">
@@ -22,6 +26,11 @@
         <div class="album-placeholder" *ngIf="!getCoverUrl(album)">
           <mat-icon>photo_library</mat-icon>
           <span *ngIf="getPhotoCount(album) === 0">空相册</span>
+          <span *ngIf="getPhotoCount(album) > 0">等待封面</span>
+        </div>
+        <div class="album-badge">
+          <mat-icon>collections_bookmark</mat-icon>
+          <span>{{ getPhotoCount(album) }} 项</span>
         </div>
         <div class="album-overlay">
           <mat-icon>visibility</mat-icon>
@@ -30,18 +39,19 @@
       </div>
 
       <div class="album-info">
-        <h3 class="album-name selectable" [title]="album.name">{{ album.name }}</h3>
+        <div class="album-topline">
+          <h3 class="album-name selectable" [title]="album.name">{{ album.name }}</h3>
+          <span class="album-date">{{ formatDate(album.created) }}</span>
+        </div>
         <p class="album-description selectable" *ngIf="album.description" [title]="album.description">
           {{ album.description }}
         </p>
         <div class="album-meta">
           <span class="photo-count">
             <mat-icon>photo</mat-icon>
-            {{ getPhotoCount(album) }} 张图片
+            {{ getPhotoCount(album) }} 张内容
           </span>
-          <span class="created-date">
-            {{ formatDate(album.created) }}
-          </span>
+          <span class="created-date">创建于 {{ formatDate(album.created) }}</span>
         </div>
       </div>
 
@@ -59,7 +69,6 @@
   <div class="empty-state" *ngIf="!loading && albums.length === 0">
     <mat-icon>photo_library</mat-icon>
     <h2>还没有相册</h2>
-    <p>创建你的第一个相册来整理图片吧</p>
     <button mat-raised-button color="primary" (click)="openCreateDialog()">
       <mat-icon>add</mat-icon>
       新建相册
@@ -67,11 +76,12 @@
   </div>
 </div>
 
-<!-- 创建/编辑相册对话框 -->
 <div class="dialog-overlay" *ngIf="createDialogOpen" (click)="closeDialog()">
   <div class="dialog-content" (click)="$event.stopPropagation()">
     <div class="dialog-header">
-      <h2>{{ editingAlbum ? '编辑相册' : '新建相册' }}</h2>
+      <div class="dialog-header-copy">
+        <h2>{{ editingAlbum ? '编辑相册' : '新建相册' }}</h2>
+      </div>
       <button mat-icon-button (click)="closeDialog()">
         <mat-icon>close</mat-icon>
       </button>
@@ -99,12 +109,7 @@
 
     <div class="dialog-actions">
       <button mat-button (click)="closeDialog()">取消</button>
-      <button
-        mat-raised-button
-        color="primary"
-        (click)="saveAlbum()"
-        [disabled]="!albumForm.name.trim()"
-      >
+      <button mat-raised-button color="primary" (click)="saveAlbum()" [disabled]="!albumForm.name.trim()">
         {{ editingAlbum ? '保存' : '创建' }}
       </button>
     </div>

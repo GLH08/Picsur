@@ -46,6 +46,13 @@ tmp/
 postgres_data/
 uploads/
 
+# Debug artifacts
+base_logs.txt
+logs.txt
+output.bin
+headers.txt
+headers.txt
+
 # Misc
 todo.txt
 *.bak

@@ -1,4 +1,4 @@
-import { Component, HostListener, OnInit, ViewEncapsulation } from '@angular/core';
+import { Component, HostListener, OnInit, ViewChild, ElementRef, ViewEncapsulation, TemplateRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AutoUnsubscribe } from 'ngx-auto-unsubscribe-decorator';
 import {
@@ -22,12 +22,13 @@ import { Logger } from '../../services/logger/logger.service';
 import { BSScreenSize, BootstrapService } from '../../util/bootstrap.service';
 import { DialogService } from '../../util/dialog-manager/dialog.service';
 import { ErrorService } from '../../util/error-manager/error.service';
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { ShareDialogComponent, ShareDialogData } from '../../components/share-dialog/share-dialog.component';
 import { AlbumPickerComponent, AlbumPickerData } from '../../components/album-picker/album-picker.component';
 import { StorageService, STORAGE_CONFIGS } from '../../services/storage/storage.service';
 
 interface ImageGroup {
+  key: string;
   title: string;
   images: EImage[];
   collapsed: boolean;
@@ -66,6 +67,14 @@ export class ImagesComponent implements OnInit {
   viewerIndex = 0;
   viewerZoom = 100;
 
+  // 图片平移状态
+  isPanning = false;
+  panStartX = 0;
+  panStartY = 0;
+  panOffsetX = 0;
+  panOffsetY = 0;
+  private imageLoaded = false;
+
   // 标签管理面板状态
   tagPanelOpen = false;
   tagPanelImage: EImage | null = null;
@@ -76,6 +85,7 @@ export class ImagesComponent implements OnInit {
   selectionMode = false;
   selectedIds = new Set<string>();
   lastSelectedId: string | null = null; // 记录最后选择的图片，用于 Shift 连续选择
+  private readonly collapsedGroupKeys = new Set<string>();
 
   // 搜索
   searchQuery = '';
@@ -86,6 +96,10 @@ export class ImagesComponent implements OnInit {
   contextMenuX = 0;
   contextMenuY = 0;
   contextMenuImage: EImage | null = null;
+  @ViewChild('contextMenu') contextMenuRef: ElementRef<HTMLElement> | null = null;
+
+  @ViewChild('viewerTemplate') viewerTemplate!: TemplateRef<any>;
+  private dialogRef: MatDialogRef<any> | null = null;
 
   // 图片格式缓存
   private imageFormatCache = new Map<string, string>();
@@ -119,37 +133,30 @@ export class ImagesComponent implements OnInit {
     const images = this.images;
     if (!images || images.length === 0) return [];
 
-    // 按日期分组
     const groups = new Map<string, EImage[]>();
 
     images.forEach((image: EImage) => {
       const created = new Date(image.created);
-      // 生成日期 key: YYYY-MM-DD
       const dateKey = `${created.getFullYear()}-${String(created.getMonth() + 1).padStart(2, '0')}-${String(created.getDate()).padStart(2, '0')}`;
-      
+
       if (!groups.has(dateKey)) {
         groups.set(dateKey, []);
       }
       groups.get(dateKey)!.push(image);
     });
 
-    // 转换为数组并按日期降序排序
-    const result: ImageGroup[] = [];
-    const sortedKeys = Array.from(groups.keys()).sort((a, b) => b.localeCompare(a));
+    return Array.from(groups.keys())
+      .sort((a, b) => b.localeCompare(a))
+      .map((dateKey) => {
+        const [year, month, day] = dateKey.split('-');
 
-    sortedKeys.forEach((dateKey) => {
-      // 格式化为 "YYYY/MM/DD"
-      const [year, month, day] = dateKey.split('-');
-      const title = `${year}/${month}/${day}`;
-      
-      result.push({
-        title,
-        images: groups.get(dateKey)!,
-        collapsed: false,
+        return {
+          key: dateKey,
+          title: `${year}/${month}/${day}`,
+          images: groups.get(dateKey)!,
+          collapsed: this.collapsedGroupKeys.has(dateKey),
+        };
       });
-    });
-
-    return result;
   }
 
   page = 1;
@@ -344,14 +351,73 @@ export class ImagesComponent implements OnInit {
     this.viewerIndex = this.images?.findIndex((i) => i.id === image.id) ?? 0;
     this.viewerOpen = true;
     this.viewerZoom = VIEWER_ZOOM.DEFAULT;
+    this.panOffsetX = 0;
+    this.panOffsetY = 0;
+    this.imageLoaded = false;
     document.body.style.overflow = 'hidden';
+
+    // Fix containing block issues by wrapping the fullscreen overlay in a cdk-overlay portal using MatDialog
+    if (this.viewerTemplate && !this.dialogRef) {
+      this.dialogRef = this.dialog.open(this.viewerTemplate, {
+        panelClass: 'picsur-viewer-overlay-dialog',
+        hasBackdrop: false,
+        disableClose: true,
+        maxWidth: '100vw',
+        maxHeight: '100vh',
+        width: '100vw',
+        height: '100vh',
+        autoFocus: false
+      });
+    }
+  }
+
+  onViewerImageLoad(event: Event) {
+    this.imageLoaded = true;
+  }
+
+  getViewerImageStyle(): Record<string, string> {
+    const zoom = this.viewerZoom / 100;
+    // Centering is handled by the flex container (.photo-viewer-container)
+    // Translate in screen space first (divide by zoom), then apply zoom scale
+    // This makes the screen drag offset track the mouse pointer 1:1 regardless of zoom level
+    return {
+      transform: `scale(${zoom}) translate(${this.panOffsetX / zoom}px, ${this.panOffsetY / zoom}px)`,
+      transformOrigin: 'center center',
+      cursor: this.isPanning ? 'grabbing' : 'grab',
+      userSelect: 'none'
+    };
+  }
+
+  // ========== 图片平移 ==========
+  onPanStart(event: MouseEvent) {
+    if (this.viewerZoom <= 100) return; // 只在放大时允许拖动
+    this.isPanning = true;
+    this.panStartX = event.clientX - this.panOffsetX;
+    this.panStartY = event.clientY - this.panOffsetY;
+  }
+
+  onPanMove(event: MouseEvent) {
+    if (!this.isPanning) return;
+    event.preventDefault();
+    this.panOffsetX = event.clientX - this.panStartX;
+    this.panOffsetY = event.clientY - this.panStartY;
+  }
+
+  onPanEnd() {
+    this.isPanning = false;
   }
 
   closeViewer() {
     this.viewerOpen = false;
     this.viewerImage = null;
     this.viewerZoom = VIEWER_ZOOM.DEFAULT;
+    this.panOffsetX = 0;
+    this.panOffsetY = 0;
     document.body.style.overflow = '';
+    if (this.dialogRef) {
+      this.dialogRef.close();
+      this.dialogRef = null;
+    }
   }
 
   viewerPrev() {
@@ -359,6 +425,8 @@ export class ImagesComponent implements OnInit {
     this.viewerIndex = (this.viewerIndex - 1 + this.images.length) % this.images.length;
     this.viewerImage = this.images[this.viewerIndex];
     this.viewerZoom = VIEWER_ZOOM.DEFAULT;
+    this.panOffsetX = 0;
+    this.panOffsetY = 0;
   }
 
   viewerNext() {
@@ -366,6 +434,8 @@ export class ImagesComponent implements OnInit {
     this.viewerIndex = (this.viewerIndex + 1) % this.images.length;
     this.viewerImage = this.images[this.viewerIndex];
     this.viewerZoom = VIEWER_ZOOM.DEFAULT;
+    this.panOffsetX = 0;
+    this.panOffsetY = 0;
   }
 
   viewerZoomIn() {
@@ -373,11 +443,19 @@ export class ImagesComponent implements OnInit {
   }
 
   viewerZoomOut() {
-    if (this.viewerZoom > VIEWER_ZOOM.MIN) this.viewerZoom -= VIEWER_ZOOM.STEP;
+    if (this.viewerZoom > VIEWER_ZOOM.MIN) {
+      this.viewerZoom -= VIEWER_ZOOM.STEP;
+      if (this.viewerZoom <= 100) {
+        this.panOffsetX = 0;
+        this.panOffsetY = 0;
+      }
+    }
   }
 
   viewerResetZoom() {
     this.viewerZoom = VIEWER_ZOOM.DEFAULT;
+    this.panOffsetX = 0;
+    this.panOffsetY = 0;
   }
 
   onViewerWheel(event: WheelEvent) {
@@ -518,6 +596,10 @@ export class ImagesComponent implements OnInit {
   async deleteImage(image: EImage, event?: Event) {
     event?.stopPropagation();
 
+    if (this.contextMenuVisible) {
+      this.closeContextMenu();
+    }
+
     const pressedButton = await this.dialogService.showDialog({
       title: `确定要删除这张图片吗？`,
       description: '此操作无法撤销。',
@@ -546,8 +628,15 @@ export class ImagesComponent implements OnInit {
     }
   }
 
-  toggleGroup(group: ImageGroup) {
-    group.collapsed = !group.collapsed;
+  toggleGroup(groupKey: string, event?: Event) {
+    event?.stopPropagation();
+
+    if (this.collapsedGroupKeys.has(groupKey)) {
+      this.collapsedGroupKeys.delete(groupKey);
+      return;
+    }
+
+    this.collapsedGroupKeys.add(groupKey);
   }
 
   gotoPage(page: number) {
@@ -657,6 +746,10 @@ export class ImagesComponent implements OnInit {
   async deleteSelected() {
     if (this.selectedIds.size === 0) return;
 
+    if (this.contextMenuVisible) {
+      this.closeContextMenu();
+    }
+
     const pressedButton = await this.dialogService.showDialog({
       title: `确定要删除选中的 ${this.selectedIds.size} 张图片吗？`,
       description: '此操作无法撤销。',
@@ -725,31 +818,43 @@ export class ImagesComponent implements OnInit {
     event.preventDefault();
     event.stopPropagation();
     this.contextMenuImage = image;
-    
+
     // 计算菜单位置，确保不超出视口
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
-    
+
     let x = event.clientX;
     let y = event.clientY;
-    
+
     // 如果菜单会超出右边界，向左偏移
     if (x + CONTEXT_MENU.WIDTH > viewportWidth) {
       x = viewportWidth - CONTEXT_MENU.WIDTH - CONTEXT_MENU.MARGIN;
     }
-    
+
     // 如果菜单会超出下边界，向上偏移
     if (y + CONTEXT_MENU.HEIGHT > viewportHeight) {
       y = viewportHeight - CONTEXT_MENU.HEIGHT - CONTEXT_MENU.MARGIN;
     }
-    
+
     // 确保不会出现负值
     x = Math.max(CONTEXT_MENU.MARGIN, x);
     y = Math.max(CONTEXT_MENU.MARGIN, y);
-    
+
     this.contextMenuX = x;
     this.contextMenuY = y;
     this.contextMenuVisible = true;
+
+    // 渲染后根据实际高度调整位置
+    requestAnimationFrame(() => {
+      if (this.contextMenuRef?.nativeElement) {
+        const menuHeight = this.contextMenuRef.nativeElement.offsetHeight;
+        const actualY = this.contextMenuY;
+        const maxY = viewportHeight - menuHeight - CONTEXT_MENU.MARGIN;
+        if (actualY > maxY) {
+          this.contextMenuY = Math.max(CONTEXT_MENU.MARGIN, maxY);
+        }
+      }
+    });
   }
 
   closeContextMenu() {
@@ -864,8 +969,10 @@ export class ImagesComponent implements OnInit {
 
   async deleteContextImage() {
     if (!this.contextMenuImage) return;
-    await this.deleteImage(this.contextMenuImage);
+
+    const image = this.contextMenuImage;
     this.closeContextMenu();
+    await this.deleteImage(image);
   }
 
   // ========== 分享功能 ==========
@@ -890,6 +997,14 @@ export class ImagesComponent implements OnInit {
     this.closeContextMenu();
   }
 
+  trackByGroup(_index: number, group: ImageGroup) {
+    return group.key;
+  }
+
+  trackByImage(_index: number, image: EImage) {
+    return image.id;
+  }
+
   async addToAlbum() {
     if (!this.contextMenuImage) return;
     
@@ -909,3 +1024,5 @@ export class ImagesComponent implements OnInit {
     this.closeContextMenu();
   }
 }
+
+

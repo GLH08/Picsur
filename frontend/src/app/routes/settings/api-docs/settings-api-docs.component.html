@@ -1,66 +1,40 @@
-<h1>API 使用文档</h1>
+<div class="api-docs-page media-page-shell">
+  <div class="images-header media-hero">
+    <div class="header-left">
+      <h1>API 使用文档</h1>
+    </div>
+  </div>
 
-<div class="api-docs-content">
-  <mat-card class="api-section">
-    <mat-card-header>
-      <mat-icon mat-card-avatar>link</mat-icon>
-      <mat-card-title>API 端点</mat-card-title>
-    </mat-card-header>
-    <mat-card-content>
-      <div class="code-block">
+  <div class="api-docs-page__sections">
+    <section class="api-docs-page__panel glass-panel">
+      <div class="api-docs-page__head"><h2>API 端点</h2><span>Endpoint</span></div>
+      <div class="api-docs-page__code-line">
         <code>POST {{ apiBaseUrl }}/api/image/upload</code>
-        <button mat-icon-button (click)="copyToClipboard(apiBaseUrl + '/api/image/upload')">
-          <mat-icon>content_copy</mat-icon>
-        </button>
+        <button mat-icon-button (click)="copyToClipboard(apiBaseUrl + '/api/image/upload')"><mat-icon>content_copy</mat-icon></button>
       </div>
-    </mat-card-content>
-  </mat-card>
+    </section>
 
-  <mat-card class="api-section">
-    <mat-card-header>
-      <mat-icon mat-card-avatar>vpn_key</mat-icon>
-      <mat-card-title>认证方式</mat-card-title>
-    </mat-card-header>
-    <mat-card-content>
+    <section class="api-docs-page__panel glass-panel">
+      <div class="api-docs-page__head"><h2>认证方式</h2><span>Auth</span></div>
       <p>在请求头中添加 <code class="inline-code">Authorization</code> 字段：</p>
-      <div class="code-block">
-        <code>Authorization: Api-Key YOUR_API_KEY</code>
-      </div>
-      <p class="hint warning">
-        <mat-icon>warning</mat-icon>
-        注意：前缀是 <code class="inline-code">Api-Key</code>（带空格），不是 Bearer
-      </p>
-      <p class="hint">
-        <mat-icon>info</mat-icon>
-        请在 <a routerLink="/settings/apikeys">API密钥</a> 页面创建和管理您的 API 密钥
-      </p>
-    </mat-card-content>
-  </mat-card>
+      <div class="api-docs-page__code-line"><code>Authorization: Api-Key YOUR_API_KEY</code></div>
+      <p class="api-docs-page__hint api-docs-page__hint--warning"><mat-icon>warning</mat-icon>注意：前缀是 <code class="inline-code">Api-Key</code>，不是 Bearer。</p>
+      <p class="api-docs-page__hint"><mat-icon>info</mat-icon>请在 <a routerLink="/settings/apikeys">API密钥</a> 页面创建和管理您的密钥。</p>
+    </section>
 
-  <mat-card class="api-section">
-    <mat-card-header>
-      <mat-icon mat-card-avatar>terminal</mat-icon>
-      <mat-card-title>cURL 示例</mat-card-title>
-    </mat-card-header>
-    <mat-card-content>
-      <div class="code-block multi-line">
+    <section class="api-docs-page__panel glass-panel">
+      <div class="api-docs-page__head"><h2>cURL 示例</h2><span>CLI</span></div>
+      <div class="api-docs-page__code-block">
         <pre>curl -X POST "{{ apiBaseUrl }}/api/image/upload" \
   -H "Authorization: Api-Key YOUR_API_KEY" \
   -F "image=&#64;/path/to/image.png"</pre>
-        <button mat-icon-button (click)="copyCurlExample()">
-          <mat-icon>content_copy</mat-icon>
-        </button>
+        <button mat-icon-button (click)="copyCurlExample()"><mat-icon>content_copy</mat-icon></button>
       </div>
-    </mat-card-content>
-  </mat-card>
+    </section>
 
-  <mat-card class="api-section">
-    <mat-card-header>
-      <mat-icon mat-card-avatar>code</mat-icon>
-      <mat-card-title>Python 示例</mat-card-title>
-    </mat-card-header>
-    <mat-card-content>
-      <div class="code-block multi-line">
+    <section class="api-docs-page__panel glass-panel">
+      <div class="api-docs-page__head"><h2>Python 示例</h2><span>Python</span></div>
+      <div class="api-docs-page__code-block">
         <pre>import requests
 
 url = "{{ apiBaseUrl }}/api/image/upload"
@@ -69,20 +43,13 @@ files = {{ '{' }}"image": open("image.png", "rb"){{ '}' }}
 
 response = requests.post(url, headers=headers, files=files)
 print(response.json())</pre>
-        <button mat-icon-button (click)="copyPythonExample()">
-          <mat-icon>content_copy</mat-icon>
-        </button>
+        <button mat-icon-button (click)="copyPythonExample()"><mat-icon>content_copy</mat-icon></button>
       </div>
-    </mat-card-content>
-  </mat-card>
+    </section>
 
-  <mat-card class="api-section">
-    <mat-card-header>
-      <mat-icon mat-card-avatar>javascript</mat-icon>
-      <mat-card-title>JavaScript (fetch) 示例</mat-card-title>
-    </mat-card-header>
-    <mat-card-content>
-      <div class="code-block multi-line">
+    <section class="api-docs-page__panel glass-panel">
+      <div class="api-docs-page__head"><h2>JavaScript 示例</h2><span>Fetch</span></div>
+      <div class="api-docs-page__code-block">
         <pre>const formData = new FormData();
 formData.append('image', fileInput.files[0]);
 
@@ -93,21 +60,14 @@ fetch('{{ apiBaseUrl }}/api/image/upload', {{ '{' }}
 {{ '}' }})
 .then(res => res.json())
 .then(data => console.log(data));</pre>
-        <button mat-icon-button (click)="copyJsExample()">
-          <mat-icon>content_copy</mat-icon>
-        </button>
+        <button mat-icon-button (click)="copyJsExample()"><mat-icon>content_copy</mat-icon></button>
       </div>
-    </mat-card-content>
-  </mat-card>
+    </section>
 
-  <mat-card class="api-section">
-    <mat-card-header>
-      <mat-icon mat-card-avatar>description</mat-icon>
-      <mat-card-title>响应格式</mat-card-title>
-    </mat-card-header>
-    <mat-card-content>
+    <section class="api-docs-page__panel glass-panel">
+      <div class="api-docs-page__head"><h2>响应格式</h2><span>Response</span></div>
       <h4>成功响应</h4>
-      <div class="code-block multi-line">
+      <div class="api-docs-page__code-block api-docs-page__code-block--plain">
         <pre>{{ '{' }}
   "success": true,
   "data": {{ '{' }}
@@ -117,7 +77,7 @@ fetch('{{ apiBaseUrl }}/api/image/upload', {{ '{' }}
 {{ '}' }}</pre>
       </div>
       <h4>错误响应</h4>
-      <div class="code-block multi-line">
+      <div class="api-docs-page__code-block api-docs-page__code-block--plain">
         <pre>{{ '{' }}
   "success": false,
   "error": {{ '{' }}
@@ -126,15 +86,10 @@ fetch('{{ apiBaseUrl }}/api/image/upload', {{ '{' }}
   {{ '}' }}
 {{ '}' }}</pre>
       </div>
-    </mat-card-content>
-  </mat-card>
+    </section>
 
-  <mat-card class="api-section">
-    <mat-card-header>
-      <mat-icon mat-card-avatar>help</mat-icon>
-      <mat-card-title>常见问题</mat-card-title>
-    </mat-card-header>
-    <mat-card-content>
+    <section class="api-docs-page__panel glass-panel">
+      <div class="api-docs-page__head"><h2>常见问题</h2><span>FAQ</span></div>
       <mat-accordion>
         <mat-expansion-panel>
           <mat-expansion-panel-header>
@@ -156,6 +111,7 @@ fetch('{{ apiBaseUrl }}/api/image/upload', {{ '{' }}
           <p>例如：<code class="inline-code">{{ apiBaseUrl }}/i/20251130/abc123</code></p>
         </mat-expansion-panel>
       </mat-accordion>
-    </mat-card-content>
-  </mat-card>
+    </section>
+  </div>
 </div>
+

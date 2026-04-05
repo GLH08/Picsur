@@ -1,4 +1,4 @@
-<mat-toolbar>
+<mat-toolbar class="app-header glass-panel">
   <mat-progress-bar
     *ngIf="loading"
     class="loading-bar"
@@ -6,82 +6,94 @@
     color="accent"
   ></mat-progress-bar>
 
-  <button
-    *ngIf="_enableHamburger"
-    class="me-3"
-    mat-icon-button
-    (click)="onHamburgerClick.emit()"
-  >
-    <mat-icon>menu</mat-icon>
-  </button>
+  <div class="app-header__inner">
+    <div class="app-header__lead">
+      <button
+        *ngIf="_enableHamburger"
+        mat-icon-button
+        class="app-header__icon-btn"
+        (click)="onHamburgerClick.emit()"
+      >
+        <mat-icon>menu</mat-icon>
+      </button>
 
-  <a [routerLink]="['/']" class="logo text-link">
-    <div class="svg-logo">
-      <img src="/assets/branding/logo/picsur.svg" alt="Picsur Icon Logo" />
-    </div>
-    <div class="svg-logo-text">
-      <img
-        src="/assets/branding/text/picsur_light.svg"
-        class="ms-3 d-none d-sm-block"
-        alt="Picsur Text Logo"
-      />
-    </div>
-  </a>
-
-  <span class="spacer"></span>
-
-  <button
-    matTooltip="上传图片"
-    *ngIf="canUpload"
-    mat-icon-button
-    class="me-3"
-    (click)="doUpload()"
-  >
-    <mat-icon fontSet="material-icons-outlined">upload</mat-icon>
-  </button>
-
-  <button
-    [matTooltip]="themeTooltip"
-    mat-icon-button
-    class="me-3"
-    (click)="toggleTheme()"
-  >
-    <mat-icon fontSet="material-icons-outlined">{{ themeIcon }}</mat-icon>
-  </button>
-
-  <button
-    [matTooltip]="canRegister ? '登录或注册' : '登录到您的账户'"
-    *ngIf="!isLoggedIn && canLogIn"
-    mat-stroked-button
-    (click)="doLogin()"
-  >
-    登录
-  </button>
-
-  <!-- <span *ngIf="isLoggedIn" class="me-3 d-none d-sm-block">
-    {{ user?.username }}
-  </span> -->
-  <button
-    matTooltip="您的账户"
-    *ngIf="isLoggedIn"
-    mat-icon-button
-    [matMenuTriggerFor]="menu"
-  >
-    <mat-icon fontSet="material-icons-outlined">account_circle</mat-icon>
-  </button>
-
-  <mat-menu #menu="matMenu" xPosition="before">
-    <ng-template matMenuContent>
-      <span>
-        <div class="menu-username center-horizontally">
-          <h2 class="mat-typography">{{ user?.username }}</h2>
+      <a [routerLink]="homeRoute" class="logo text-link">
+        <div class="svg-logo">
+          <img src="/assets/branding/logo/picsur.svg" alt="Picsur Icon Logo" />
         </div>
-      </span>
-      <button *ngIf="canUpload" mat-menu-item [routerLink]="['/images']">
+        <div class="svg-logo-text">
+          <img
+            src="/assets/branding/text/picsur_dark.svg"
+            class="d-none d-sm-block"
+            alt="Picsur Text Logo"
+          />
+        </div>
+      </a>
+    </div>
+
+    <div class="app-header__nav" *ngIf="canUpload && isLoggedIn">
+      <button mat-stroked-button class="nav-pill" (click)="doImages()">
+        <mat-icon fontSet="material-icons-outlined">image</mat-icon>
+        <span>图片</span>
+      </button>
+      <button mat-stroked-button class="nav-pill" [routerLink]="['/videos', 1]">
+        <mat-icon fontSet="material-icons-outlined">videocam</mat-icon>
+        <span>视频</span>
+      </button>
+      <button mat-stroked-button class="nav-pill" [routerLink]="['/albums']">
+        <mat-icon fontSet="material-icons-outlined">photo_library</mat-icon>
+        <span>相册</span>
+      </button>
+    </div>
+
+    <span class="spacer"></span>
+
+    <div class="app-header__actions">
+      <button
+        matTooltip="上传内容"
+        *ngIf="canUpload"
+        mat-flat-button
+        color="primary"
+        class="upload-cta"
+        (click)="doUpload()"
+      >
+        <mat-icon fontSet="material-icons-outlined">upload</mat-icon>
+        <span class="d-none d-sm-inline">上传</span>
+      </button>
+
+      <button
+        [matTooltip]="canRegister ? '登录或注册' : '登录到您的账户'"
+        *ngIf="!isLoggedIn && canLogIn"
+        mat-stroked-button
+        class="login-btn"
+        (click)="doLogin()"
+      >
+        登录
+      </button>
+
+      <button
+        matTooltip="您的账户"
+        *ngIf="isLoggedIn"
+        mat-icon-button
+        class="app-header__avatar-btn"
+        [matMenuTriggerFor]="menu"
+      >
+        <mat-icon fontSet="material-icons-outlined">account_circle</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <mat-menu #menu="matMenu" xPosition="before" class="account-menu">
+    <ng-template matMenuContent>
+      <div class="menu-username">
+        <div class="menu-username__label">已登录</div>
+        <h2 class="mat-typography">{{ user?.username }}</h2>
+      </div>
+      <button *ngIf="canUpload" mat-menu-item [routerLink]="['/images', 1]">
         <mat-icon fontSet="material-icons-outlined">image</mat-icon>
         <span>我的图片</span>
       </button>
-      <button *ngIf="canUpload" mat-menu-item [routerLink]="['/videos']">
+      <button *ngIf="canUpload" mat-menu-item [routerLink]="['/videos', 1]">
         <mat-icon fontSet="material-icons-outlined">videocam</mat-icon>
         <span>我的视频</span>
       </button>

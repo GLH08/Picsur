@@ -1,10 +1,23 @@
-<div class="dialog-text">
+<div class="view-dialog media-dialog-shell">
   <form (ngSubmit)="save()">
-    <div class="row">
-      <div class="col-12">
-        <h1>Edit Image</h1>
+    <div class="view-dialog__header">
+      <div class="view-dialog__header-copy">
+        <span class="view-dialog__eyebrow">Metadata</span>
+        <h2>编辑内容</h2>
+        <p>修改标题与过期策略，保留现有详情页的沉浸式信息结构。</p>
       </div>
-      <div class="col-12">
+      <button type="button" mat-icon-button (click)="close()" aria-label="关闭">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+    <div class="view-dialog__content">
+      <section class="view-dialog__panel">
+        <div class="view-dialog__section-head">
+          <h3>基础信息</h3>
+          <span>#{{ image.id | slice:0:8 }}</span>
+        </div>
+
         <mat-form-field appearance="outline">
           <mat-label>Title</mat-label>
           <input
@@ -14,9 +27,8 @@
             [(ngModel)]="image.file_name"
           />
         </mat-form-field>
-      </div>
-      <div class="col-12">
-        <mat-form-field>
+
+        <mat-form-field appearance="outline">
           <mat-label>Expires After</mat-label>
           <mat-select
             [ngModelOptions]="{ standalone: true }"
@@ -30,13 +42,12 @@
             </mat-option>
           </mat-select>
         </mat-form-field>
-      </div>
+      </section>
     </div>
-    <div class="dialog-buttons">
-      <button type="button" mat-flat-button (click)="close()" color="accent">
-        CANCEL
-      </button>
-      <button type="submit" mat-raised-button color="primary">SAVE</button>
+
+    <div class="view-dialog__actions">
+      <button type="button" mat-button (click)="close()">取消</button>
+      <button type="submit" mat-raised-button color="primary">保存</button>
     </div>
   </form>
 </div>

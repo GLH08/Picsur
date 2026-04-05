@@ -1,6 +1,7 @@
-import { Controller, Get, Head, Logger, Param, Query, Res } from '@nestjs/common';
+import { Controller, Get, Head, Logger, Param, Query, Res, Req } from '@nestjs/common';
 import { SkipThrottle } from '@nestjs/throttler';
-import type { FastifyReply } from 'fastify';
+import type { FastifyReply, FastifyRequest } from 'fastify';
+import { createReadStream, statSync } from 'fs';
 import {
   ImageMetaResponse,
   ImageRequestParams,
@@ -24,6 +25,54 @@ import type { ImageFullId } from '../../models/constants/image-full-id.const.js'
 import { Permission } from '../../models/constants/permissions.const.js';
 import { EUserBackend2EUser } from '../../models/transformers/user.transformer.js';
 import { BrandMessageType, GetBrandMessage } from '../../util/branding.js';
+
+function sendFileSmart(res: FastifyReply, req: FastifyRequest, fileEntity: any, mime: string) {
+  if (fileEntity.path) {
+    try {
+      const stat = statSync(fileEntity.path);
+      const fileSize = stat.size;
+      const range = req.headers.range;
+
+      res.header('Accept-Ranges', 'bytes');
+
+      if (range) {
+        const parts = range.replace(/bytes=/, '').split('-');
+        const start = parseInt(parts[0], 10);
+        const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+
+        if (start >= fileSize || start > end || start < 0) {
+          res.status(416).header('Content-Range', `bytes */${fileSize}`).send();
+          return;
+        }
+
+        const chunksize = end - start + 1;
+        const file = createReadStream(fileEntity.path, { start, end });
+        res
+          .status(206)
+          .header('Content-Range', `bytes ${start}-${end}/${fileSize}`)
+          .header('Content-Length', chunksize)
+          .type(mime)
+          .send(file);
+        return;
+      } else {
+        res
+          .header('Content-Length', fileSize)
+          .type(mime)
+          .send(createReadStream(fileEntity.path));
+        return;
+      }
+    } catch(e) {
+      console.error('Failed to send file with range support, falling back to direct send:', e);
+    }
+  }
+  
+  if (fileEntity.data) {
+    res.type(mime).send(fileEntity.data);
+  } else {
+    res.status(404).send('Not Found');
+  }
+}
+
 
 // This is the only controller with CORS enabled
 @Controller('i')
@@ -56,11 +105,12 @@ export class ImageController {
 
   @Get(':date/:filename')
   async getImageWithDate(
-    @Res({ passthrough: true }) res: FastifyReply,
+    @Req() req: FastifyRequest,
+    @Res() res: FastifyReply,
     @Param('date') date: string,
     @Param('filename') filename: string,
     @Query() params: ImageRequestParams,
-  ): Promise<Buffer> {
+  ): Promise<void> {
     // Extract ID from filename (assuming format: uuid.ext)
     const parts = filename.split('.');
     const id = parts[0];
@@ -80,28 +130,35 @@ export class ImageController {
     res.header('Content-Disposition', 'inline');
 
     // Reuse existing logic
-    return this.getImage(res, fullid, params);
+    return this.getImage(req, res, fullid, params);
   }
 
   @Get(':id')
   async getImage(
-    // Usually passthrough is for manually sending the response,
-    // But we need it here to set the mime type
-    @Res({ passthrough: true }) res: FastifyReply,
+    @Req() req: FastifyRequest,
+    @Res() res: FastifyReply,
     @ImageFullIdParam() fullid: ImageFullId,
     @Query() params: ImageRequestParams,
-  ): Promise<Buffer> {
+  ): Promise<void> {
     // Set Content-Disposition to inline for browser display
     res.header('Content-Disposition', 'inline');
 
     try {
       if (fullid.variant === ImageEntryVariant.ORIGINAL) {
         const image = ThrowIfFailed(
-          await this.imagesService.getOriginal(fullid.id),
+          await this.imagesService.getOriginalLazy(fullid.id),
         );
 
-        res.type(ThrowIfFailed(FileType2Mime(image.filetype)));
-        return image.data;
+        sendFileSmart(res, req, image, ThrowIfFailed(FileType2Mime(image.filetype)));
+        return;
+      }
+
+      // Check if this is a video. If so, return master lazily!
+      const masterType = ThrowIfFailed(await this.imagesService.getMasterFileType(fullid.id));
+      if (masterType.category === 'video') {
+         const image = ThrowIfFailed(await this.imagesService.getMasterLazy(fullid.id));
+         sendFileSmart(res, req, image, ThrowIfFailed(FileType2Mime(image.filetype)));
+         return;
       }
 
       const image = ThrowIfFailed(
@@ -112,40 +169,41 @@ export class ImageController {
         ),
       );
 
-      res.type(ThrowIfFailed(FileType2Mime(image.filetype)));
-      return image.data;
+      sendFileSmart(res, req, image, ThrowIfFailed(FileType2Mime(image.filetype)));
+      return;
     } catch (e) {
       if (!IsFailure(e) || e.getType() !== FT.NotFound) throw e;
 
       const message = ThrowIfFailed(
         await GetBrandMessage(BrandMessageType.NotFound),
       );
-      res.type(message.type);
-      return message.data;
+      res.type(message.type).send(message.data);
+      return;
     }
   }
 
   @Get('thumb/:id')
   async getThumbnail(
-    @Res({ passthrough: true }) res: FastifyReply,
+    @Req() req: FastifyRequest,
+    @Res() res: FastifyReply,
     @ImageIdParam() id: string,
-  ): Promise<Buffer> {
+  ): Promise<void> {
     // Set Content-Disposition to inline for browser display
     res.header('Content-Disposition', 'inline');
 
     try {
       // 优先返回 ORIGINAL（视频缩略图或图片原图）
-      const original = await this.imagesService.getOriginal(id);
+      const original = await this.imagesService.getOriginalLazy(id);
       if (!HasFailed(original)) {
-        res.type(ThrowIfFailed(FileType2Mime(original.filetype)));
-        return original.data;
+        sendFileSmart(res, req, original, ThrowIfFailed(FileType2Mime(original.filetype)));
+        return;
       }
 
       // 如果没有 ORIGINAL，返回 MASTER（图片主文件）
-      const master = await this.imagesService.getMaster(id);
+      const master = await this.imagesService.getMasterLazy(id);
       if (!HasFailed(master)) {
-        res.type(ThrowIfFailed(FileType2Mime(master.filetype)));
-        return master.data;
+        sendFileSmart(res, req, master, ThrowIfFailed(FileType2Mime(master.filetype)));
+        return;
       }
 
       // 都没有就返回 404
@@ -156,8 +214,8 @@ export class ImageController {
       const message = ThrowIfFailed(
         await GetBrandMessage(BrandMessageType.NotFound),
       );
-      res.type(message.type);
-      return message.data;
+      res.type(message.type).send(message.data);
+      return;
     }
   }
 

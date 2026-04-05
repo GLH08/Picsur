@@ -77,6 +77,22 @@ export class ImageFileDBService {
     }
   }
 
+  public async getFileLazy(
+    imageId: string,
+    variant: ImageEntryVariant,
+  ): AsyncFailable<EImageFileBackend> {
+    try {
+      const found = await this.imageFileRepo.findOne({
+        where: { image_id: imageId ?? '', variant: variant ?? '' },
+      });
+
+      if (!found) return Fail(FT.NotFound, 'Image not found');
+      return found;
+    } catch (e) {
+      return Fail(FT.Database, e);
+    }
+  }
+
   public async migrateFile(
     imageId: string,
     sourceVariant: ImageEntryVariant,

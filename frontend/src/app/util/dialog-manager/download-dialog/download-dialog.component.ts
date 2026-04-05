@@ -10,6 +10,7 @@ export interface DownloadDialogData {
 @Component({
   selector: 'download-dialog',
   templateUrl: './download-dialog.component.html',
+  styleUrls: ['./download-dialog.component.scss'],
 })
 export class DownloadDialogComponent {
   public progress: Observable<number>;

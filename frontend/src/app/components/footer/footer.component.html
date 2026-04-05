@@ -1,8 +1,9 @@
-<footer class="container">
-  <p>
-    <span class="line">
-      Picsur 图床
-      {{ isDemo ? ' - 演示版本' : '' }}
-    </span>
-  </p>
+<footer class="app-footer page-shell__container page-shell__container--narrow">
+  <div class="app-footer__panel glass-panel">
+    <p class="app-footer__brand">
+      <span>Picsur 图床</span>
+      <span *ngIf="isDemo" class="app-footer__demo">演示版本</span>
+    </p>
+    <p class="app-footer__meta">Light interface foundation active</p>
+  </div>
 </footer>

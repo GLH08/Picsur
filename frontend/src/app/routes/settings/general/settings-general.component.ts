@@ -7,12 +7,10 @@ import {
 } from '../../../i18n/usr-pref.i18n';
 import { UsrPrefService } from '../../../services/api/usr-pref.service';
 import { UserService } from '../../../services/api/user.service';
-import { ThemeService } from '../../../services/theme/theme.service';
 import { ErrorService } from '../../../util/error-manager/error.service';
 import { StorageService, STORAGE_CONFIGS } from '../../../services/storage/storage.service';
 import { Logger } from '../../../services/logger/logger.service';
 
-// 用户设置接口
 interface UserSettings {
   copyFormat: string;
   gridColumns: number;
@@ -30,11 +28,9 @@ export class SettingsGeneralComponent implements OnInit {
   private readonly helpTranslator = UsrPreferenceHelpText;
 
   preferences: Observable<DecodedPref[]>;
-  currentTheme = 'dark';
   username = '';
   userRoles: string[] = [];
 
-  // 用户设置
   settings: UserSettings = {
     copyFormat: 'url',
     gridColumns: 4,
@@ -45,7 +41,6 @@ export class SettingsGeneralComponent implements OnInit {
   constructor(
     public readonly usrPrefService: UsrPrefService,
     private readonly userService: UserService,
-    private readonly themeService: ThemeService,
     private readonly errorService: ErrorService,
     private readonly storageService: StorageService,
   ) {
@@ -53,17 +48,12 @@ export class SettingsGeneralComponent implements OnInit {
   }
 
   ngOnInit() {
-    // 获取当前主题
-    this.currentTheme = this.themeService.getCurrentTheme();
-    
-    // 获取用户信息
     const user = this.userService.snapshot;
     if (user) {
       this.username = user.username;
       this.userRoles = user.roles || [];
     }
 
-    // 从 localStorage 加载设置
     this.loadSettings();
   }
 
@@ -73,7 +63,7 @@ export class SettingsGeneralComponent implements OnInit {
       if (saved) {
         this.settings = { ...this.settings, ...saved };
       }
-    } catch (e) {
+    } catch {
       this.logger.warn('Failed to parse saved settings');
     }
   }
@@ -89,11 +79,6 @@ export class SettingsGeneralComponent implements OnInit {
 
   public getHelpText(key: string) {
     return (this.helpTranslator as any)[key] ?? '';
-  }
-
-  onThemeChange(theme: string) {
-    this.currentTheme = theme;
-    this.themeService.setTheme(theme as 'dark' | 'light');
   }
 
   onCopyFormatChange(format: string) {

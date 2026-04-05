@@ -1,89 +1,56 @@
 .drag-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(4px);
+  inset: 0;
   z-index: 999999;
   display: flex;
   align-items: center;
   justify-content: center;
+  background: rgba(240, 246, 252, 0.78);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   animation: fadeIn 0.2s ease;
   pointer-events: none;
 }
 
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .drag-content {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 48px 64px;
-  border: 3px dashed rgba(255, 255, 255, 0.4);
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.08);
+  gap: 10px;
+  padding: 44px 56px;
+  border: 1px dashed rgba(35, 120, 255, 0.32);
+  border-radius: 32px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.86), rgba(255,255,255,0.64));
+  box-shadow: 0 28px 70px rgba(35, 120, 255, 0.14);
   animation: bounceIn 0.3s ease;
 }
 
 @keyframes bounceIn {
-  0% {
-    transform: scale(0.8);
-    opacity: 0;
-  }
-  50% {
-    transform: scale(1.05);
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
+  0% { transform: scale(0.88); opacity: 0; }
+  50% { transform: scale(1.03); }
+  100% { transform: scale(1); opacity: 1; }
 }
 
 .drag-icon {
   font-size: 64px;
   width: 64px;
   height: 64px;
-  color: #673ab7;
-  margin-bottom: 16px;
+  color: var(--accent-primary-strong);
+  margin-bottom: 8px;
 }
 
 .drag-text {
   font-size: 24px;
-  font-weight: 600;
-  color: white;
-  margin-bottom: 8px;
+  font-weight: 700;
+  color: var(--text-primary);
 }
 
 .drag-subtext {
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.6);
-}
-
-// 亮色模式
-:host-context(body.theme-light) {
-  .drag-overlay {
-    background: rgba(255, 255, 255, 0.92);
-  }
-
-  .drag-content {
-    border-color: rgba(0, 0, 0, 0.2);
-    background: rgba(0, 0, 0, 0.05);
-  }
-
-  .drag-text {
-    color: #333;
-  }
-
-  .drag-subtext {
-    color: rgba(0, 0, 0, 0.5);
-  }
+  color: var(--text-secondary);
 }

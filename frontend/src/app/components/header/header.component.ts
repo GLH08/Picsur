@@ -15,7 +15,6 @@ import { HasFailed } from 'picsur-shared/dist/types/failable';
 import { UserService } from '../../services/api/user.service';
 import { PermissionService } from '../../services/api/permission.service';
 import { Logger } from '../../services/logger/logger.service';
-import { ThemeMode, ThemeService } from '../../services/theme/theme.service';
 import { ErrorService } from '../../util/error-manager/error.service';
 
 @Component({
@@ -27,15 +26,12 @@ import { ErrorService } from '../../util/error-manager/error.service';
 export class HeaderComponent implements OnInit {
   private readonly logger = new Logger(HeaderComponent.name);
 
-  themeMode: ThemeMode = 'dark';
-
   constructor(
     private readonly router: Router,
     private readonly userService: UserService,
     private readonly permissionService: PermissionService,
     private readonly changeDetector: ChangeDetectorRef,
     private readonly errorService: ErrorService,
-    public readonly themeService: ThemeService,
   ) {}
 
   @Input('enableHamburger') public set enableHamburger(value: boolean) {
@@ -62,17 +58,23 @@ export class HeaderComponent implements OnInit {
     return this.currentUser !== null;
   }
 
+  public get homeRoute(): string[] {
+    if (this.isLoggedIn && this.canUpload) {
+      return ['/upload'];
+    }
+
+    return ['/user/login'];
+  }
+
   ngOnInit(): void {
     this.subscribeUser();
     this.subscribePermissions();
-    this.subscribeTheme();
   }
 
   @AutoUnsubscribe()
   subscribeUser() {
     return this.userService.live.subscribe((user) => {
       this.currentUser = user;
-
       this.changeDetector.markForCheck();
     });
   }
@@ -84,7 +86,6 @@ export class HeaderComponent implements OnInit {
       this.canAccessSettings = permissions.includes(Permission.Settings);
       this.canUpload = permissions.includes(Permission.ImageUpload);
       this.canRegister = permissions.includes(Permission.UserRegister);
-
       this.changeDetector.markForCheck();
     });
   }
@@ -114,40 +115,6 @@ export class HeaderComponent implements OnInit {
   }
 
   doImages() {
-    this.router.navigate(['/images']);
-  }
-
-  @AutoUnsubscribe()
-  subscribeTheme() {
-    return this.themeService.themeMode$.subscribe((mode) => {
-      this.themeMode = mode;
-      this.changeDetector.markForCheck();
-    });
-  }
-
-  toggleTheme() {
-    this.themeService.toggleTheme();
-  }
-
-  get themeIcon(): string {
-    switch (this.themeMode) {
-      case 'dark':
-        return 'dark_mode';
-      case 'light':
-        return 'light_mode';
-      case 'system':
-        return 'brightness_auto';
-    }
-  }
-
-  get themeTooltip(): string {
-    switch (this.themeMode) {
-      case 'dark':
-        return '深色模式';
-      case 'light':
-        return '浅色模式';
-      case 'system':
-        return '跟随系统';
-    }
+    this.router.navigate(['/images', 1]);
   }
 }

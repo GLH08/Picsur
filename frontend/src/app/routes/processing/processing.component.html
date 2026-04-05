@@ -1,93 +1,77 @@
-<div class="content-border">
-  <div class="upload-container">
-    <!-- 标题 -->
-    <h1 *ngIf="isUploading">正在上传...</h1>
-    <h1 *ngIf="isCompleted && errorCount === 0">上传完成</h1>
-    <h1 *ngIf="isCompleted && errorCount > 0">上传完成（{{ errorCount }} 个失败）</h1>
-
-    <!-- 总体进度 -->
-    <div class="overall-progress" *ngIf="items.length > 1">
-      <div class="progress-info">
-        <span>总进度: {{ totalProgress | number:'1.0-0' }}%</span>
-        <span>{{ formatSize(uploadedSize) }} / {{ formatSize(totalSize) }}</span>
+<div class="processing-page media-page-shell">
+  <div class="processing-page__header images-header media-hero">
+    <div class="header-left">
+      <span class="hero-eyebrow">Processing</span>
+      <h1 *ngIf="isUploading">正在上传...</h1>
+      <h1 *ngIf="isCompleted && errorCount === 0">上传完成</h1>
+      <h1 *ngIf="isCompleted && errorCount > 0">上传完成（{{ errorCount }} 个失败）</h1>
+      <p class="hero-description">上传过程会按文件逐项展示，提供总进度、实时速度、剩余时间和结果反馈。</p>
+      <div class="hero-stats">
+        <span class="hero-chip"><mat-icon>upload</mat-icon> {{ items.length }} 个文件</span>
+        <span class="hero-chip"><mat-icon>check_circle</mat-icon> {{ successCount }} 成功</span>
+        <span class="hero-chip" *ngIf="errorCount > 0"><mat-icon>error</mat-icon> {{ errorCount }} 失败</span>
       </div>
+    </div>
+  </div>
+
+  <div class="processing-page__summary processing-page__panel" *ngIf="items.length > 1">
+    <div class="processing-page__summary-head">
+      <strong>总进度 {{ totalProgress | number:'1.0-0' }}%</strong>
+      <span class="processing-page__meta">{{ formatSize(uploadedSize) }} / {{ formatSize(totalSize) }}</span>
+    </div>
+    <mat-progress-bar mode="determinate" [value]="totalProgress" color="primary"></mat-progress-bar>
+    <div class="processing-page__summary-foot" *ngIf="isUploading && smoothSpeed > 0">
+      <span class="processing-page__meta">速度: {{ formatSpd(smoothSpeed) }}
+        <span *ngIf="speedConfidence < 1">({{ (speedConfidence * 100) | number:'1.0-0' }}%)</span>
+      </span>
+      <span class="processing-page__meta">预计剩余: {{ formatEta(estimatedTime) }}</span>
+    </div>
+  </div>
+
+  <div class="processing-page__list">
+    <div
+      class="processing-page__file"
+      *ngFor="let item of items"
+      [class.is-uploading]="item.status === 'uploading'"
+      [class.is-success]="item.status === 'success'"
+      [class.is-error]="item.status === 'error'"
+    >
+      <div class="processing-page__file-head">
+        <div class="processing-page__file-name">
+          <mat-icon *ngIf="item.status === 'pending'">hourglass_empty</mat-icon>
+          <mat-icon *ngIf="item.status === 'uploading'" class="spinning">sync</mat-icon>
+          <mat-icon *ngIf="item.status === 'success'" class="success-icon">check_circle</mat-icon>
+          <mat-icon *ngIf="item.status === 'error'" class="error-icon">error</mat-icon>
+          <strong>{{ item.fileName }}</strong>
+        </div>
+        <span class="processing-page__file-meta">{{ formatSize(item.fileSize) }}</span>
+      </div>
+
       <mat-progress-bar
-        mode="determinate"
-        [value]="totalProgress"
-        color="primary"
+        *ngIf="item.status === 'uploading' || item.status === 'pending'"
+        [mode]="item.status === 'uploading' ? 'determinate' : 'indeterminate'"
+        [value]="item.progress"
+        [color]="item.status === 'uploading' ? 'accent' : 'primary'"
       ></mat-progress-bar>
-      <div class="progress-stats" *ngIf="isUploading && smoothSpeed > 0">
-        <span>速度: {{ formatSpd(smoothSpeed) }}
-          <span class="confidence" *ngIf="speedConfidence < 1" title="置信度">({{ (speedConfidence * 100) | number:'1.0-0' }}%)</span>
-        </span>
-        <span>预计剩余: {{ formatEta(estimatedTime) }}</span>
+
+      <div class="processing-page__file-foot" *ngIf="item.status === 'uploading'">
+        <span class="processing-page__file-meta">{{ item.progress | number:'1.0-0' }}%</span>
+        <span class="processing-page__file-meta" *ngIf="item.speed > 0">{{ formatSpd(item.speed) }}</span>
+      </div>
+
+      <div class="processing-page__error" *ngIf="item.status === 'error'">
+        {{ item.error }}
+      </div>
+
+      <div class="processing-page__file-foot" *ngIf="item.status === 'success'">
+        <span class="processing-page__file-meta">上传成功</span>
+        <button mat-stroked-button color="primary" (click)="viewImage(item.imageId!)">查看内容</button>
       </div>
     </div>
+  </div>
 
-    <!-- 文件列表 -->
-    <div class="file-list">
-      <div
-        class="file-item"
-        *ngFor="let item of items; let i = index"
-        [ngClass]="{
-          'uploading': item.status === 'uploading',
-          'success': item.status === 'success',
-          'error': item.status === 'error',
-          'pending': item.status === 'pending'
-        }"
-      >
-        <div class="file-info">
-          <div class="file-name">
-            <mat-icon *ngIf="item.status === 'pending'">hourglass_empty</mat-icon>
-            <mat-icon *ngIf="item.status === 'uploading'" class="spinning">sync</mat-icon>
-            <mat-icon *ngIf="item.status === 'success'" class="success-icon">check_circle</mat-icon>
-            <mat-icon *ngIf="item.status === 'error'" class="error-icon">error</mat-icon>
-            <span class="name">{{ item.fileName }}</span>
-          </div>
-          <div class="file-size">{{ formatSize(item.fileSize) }}</div>
-        </div>
-
-        <!-- 单文件进度条 -->
-        <mat-progress-bar
-          *ngIf="item.status === 'uploading' || item.status === 'pending'"
-          [mode]="item.status === 'uploading' ? 'determinate' : 'indeterminate'"
-          [value]="item.progress"
-          [color]="item.status === 'uploading' ? 'accent' : 'primary'"
-        ></mat-progress-bar>
-
-        <!-- 上传中的详细信息 -->
-        <div class="upload-details" *ngIf="item.status === 'uploading'">
-          <span>{{ item.progress | number:'1.0-0' }}%</span>
-          <span *ngIf="item.speed > 0">{{ formatSpd(item.speed) }}</span>
-        </div>
-
-        <!-- 错误信息 -->
-        <div class="error-message" *ngIf="item.status === 'error'">
-          {{ item.error }}
-        </div>
-
-        <!-- 成功后的操作 -->
-        <div class="success-actions" *ngIf="item.status === 'success'">
-          <button mat-stroked-button color="primary" (click)="viewImage(item.imageId!)">
-            查看图片
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- 完成后的操作按钮 -->
-    <div class="actions" *ngIf="isCompleted">
-      <button mat-raised-button color="primary" (click)="goHome()">
-        继续上传
-      </button>
-      <button
-        mat-stroked-button
-        color="warn"
-        *ngIf="errorCount > 0"
-        (click)="retryFailed()"
-      >
-        重试失败项
-      </button>
-    </div>
+  <div class="processing-page__actions" *ngIf="isCompleted">
+    <button mat-raised-button color="primary" (click)="goHome()">继续上传</button>
+    <button mat-stroked-button color="warn" *ngIf="errorCount > 0" (click)="retryFailed()">重试失败项</button>
   </div>
 </div>

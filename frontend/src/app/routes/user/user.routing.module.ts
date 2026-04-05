@@ -10,8 +10,7 @@ const routes: PRoutes = [
   {
     path: 'login',
     component: LoginComponent,
-    canActivate: [PermissionGuard],
-    data: { permissions: [Permission.UserLogin] },
+    // Login page should be publicly accessible, no PermissionGuard needed
   },
   {
     path: 'register',

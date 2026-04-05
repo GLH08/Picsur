@@ -1,21 +1,15 @@
-// Create white border around content
 .content-border {
-  border-radius: 20px;
+  border-radius: var(--radius-lg);
   height: 100%;
-
-  border-style: solid;
-  border-width: 5px;
+  border: 1px solid var(--border-soft);
 }
 
-// Easily center content
 .centered {
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-
   text-align: center;
-
   height: 100%;
   width: 100%;
 }
@@ -31,138 +25,47 @@
   text-align: center;
 }
 
-// Unstyled links
-.link-unstyled {
-  &,
-  &:visited,
-  &:hover,
-  &:active,
-  &:focus,
-  &:active:hover {
-    font-style: inherit;
-    color: inherit;
-    background-color: transparent;
-    font-size: inherit;
-    text-decoration: none;
-    font-variant: inherit;
-    font-weight: bold;
-    line-height: inherit;
-    font-family: inherit;
-    border-radius: inherit;
-    border: inherit;
-    outline: inherit;
-    box-shadow: inherit;
-    padding: inherit;
-    vertical-align: inherit;
-  }
+.link-unstyled,
+.link-unstyled:visited,
+.link-unstyled:hover,
+.link-unstyled:active,
+.link-unstyled:focus,
+.link-unstyled:active:hover {
+  font-style: inherit;
+  color: inherit;
+  background-color: transparent;
+  font-size: inherit;
+  text-decoration: none;
+  font-variant: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+  font-family: inherit;
+  border-radius: inherit;
+  border: inherit;
+  outline: inherit;
+  box-shadow: inherit;
+  padding: inherit;
+  vertical-align: inherit;
 }
-
-// Anim
 
 .container,
 .row > div {
   transition-property: max-width;
-  transition-duration: 0.2s;
-  transition-timing-function: ease-in-out;
+  transition-duration: var(--duration-normal);
+  transition-timing-function: var(--ease-standard);
 }
 
 .fullanimate,
 .fullanimate * {
-  transition: ease-in-out all 0.2s !important;
-}
-
-// 主题切换动画
-.theme-transition,
-.theme-transition * {
-  transition: background-color 0.3s ease,
-              color 0.3s ease,
-              border-color 0.3s ease,
-              box-shadow 0.3s ease !important;
-}
-
-// 应用到全局的主题变量变化
-:root,
-body:not(.theme-light) {
-  --bg-primary: #121212;
-  --bg-secondary: #1e1e1e;
-  --text-primary: #ffffff;
-  --text-secondary: rgba(255, 255, 255, 0.7);
-  --text-hint: rgba(255, 255, 255, 0.5);
-  --border-color: rgba(255, 255, 255, 0.12);
-  --card-bg: rgba(255, 255, 255, 0.05);
-  --card-hover-bg: rgba(255, 255, 255, 0.08);
-  --shadow-color: rgba(0, 0, 0, 0.3);
-  --icon-color: rgba(255, 255, 255, 0.7);
-  --sidebar-subheader-color: rgba(255, 255, 255, 0.5);
-  --sidebar-hover-bg: rgba(255, 255, 255, 0.08);
-  --sidebar-icon-color: rgba(255, 255, 255, 0.7);
+  transition: all var(--duration-normal) var(--ease-standard) !important;
 }
 
 .theme-transition,
 .theme-transition * {
-  transition: background-color 0.3s ease,
-              color 0.3s ease,
-              border-color 0.3s ease,
-              box-shadow 0.3s ease !important;
-}
-
-// 亮色主题
-.theme-light {
-  --bg-primary: #fafafa;
-  --bg-secondary: #ffffff;
-  --text-primary: rgba(0, 0, 0, 0.87);
-  --text-secondary: rgba(0, 0, 0, 0.6);
-  --text-hint: rgba(0, 0, 0, 0.38);
-  --border-color: rgba(0, 0, 0, 0.12);
-  --card-bg: rgba(0, 0, 0, 0.03);
-  --card-hover-bg: rgba(0, 0, 0, 0.06);
-  --shadow-color: rgba(0, 0, 0, 0.15);
-  --icon-color: rgba(0, 0, 0, 0.54);
-  --sidebar-subheader-color: rgba(0, 0, 0, 0.54);
-  --sidebar-hover-bg: rgba(0, 0, 0, 0.04);
-  --sidebar-icon-color: rgba(0, 0, 0, 0.54);
-
-  .content-border {
-    border-color: var(--border-color);
-  }
-
-  // 调整一些组件在浅色模式下的样式
-  .image-item {
-    background: var(--card-bg);
-
-    .image-overlay {
-      background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
-    }
-  }
-
-  .lightbox {
-    background: rgba(0, 0, 0, 0.9);
-
-    .lightbox-info {
-      background: rgba(0, 0, 0, 0.8);
-      color: white;
-    }
-  }
-
-  .selection-toolbar {
-    background: rgba(103, 58, 183, 0.1);
-  }
-
-  .group-header {
-    background: var(--card-bg);
-
-    &:hover {
-      background: var(--card-hover-bg);
-    }
-  }
-
-  // 图标颜色
-  mat-icon {
-    color: var(--icon-color);
-  }
-
-  // 按钮图标
-  button mat-icon {
-    color: inherit;
-  }
+  transition:
+    background-color var(--duration-normal) var(--ease-standard),
+    color var(--duration-normal) var(--ease-standard),
+    border-color var(--duration-normal) var(--ease-standard),
+    box-shadow var(--duration-normal) var(--ease-standard),
+    transform var(--duration-normal) var(--ease-standard) !important;
 }

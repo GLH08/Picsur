@@ -29,11 +29,22 @@ export class PermissionService {
   // This will not be optimistic, it will instead wait for correct data
   public getLoadedSnapshot(): Promise<string[]> {
     return new Promise((resolve) => {
+      // If we already have permissions loaded in subject, resolve immediately
+      if (this.permissionsSubject.getValue()?.length) {
+        resolve(this.permissionsSubject.getValue()!);
+        return;
+      }
+
+      // Wait for the permissionsSubject to be updated with user-specific permissions
       const filtered = this.permissionsSubject.pipe(
-        filter((permissions) => permissions !== null),
+        filter((permissions) => permissions !== null && permissions.length > 0),
         take(1),
       );
       (filtered as Observable<string[]>).subscribe(resolve);
+
+      // Safety timeout: if permissions don't load within 5 seconds,
+      // resolve with empty array (will result in 401 access denied)
+      setTimeout(() => resolve([]), 5000);
     });
   }
 
@@ -48,10 +59,6 @@ export class PermissionService {
 
   private async loadAllPermissions() {
     this.allPermissions = await this.staticInfo.getAllPermissions();
-
-    if (this.snapshot === null) {
-      this.permissionsSubject.next(null);
-    }
   }
 
   @AutoUnsubscribe()

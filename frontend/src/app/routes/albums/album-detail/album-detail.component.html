@@ -1,21 +1,32 @@
-<div class="album-detail-container">
-  <!-- 返回按钮和标题 -->
-  <div class="album-header">
-    <button mat-icon-button (click)="goBack()" class="back-btn">
+<div class="album-detail-container media-page-shell">
+  <div class="album-detail-header" *ngIf="album">
+    <button mat-icon-button (click)="goBack()" class="back-btn" aria-label="返回相册列表">
       <mat-icon>arrow_back</mat-icon>
     </button>
 
-    <div class="header-content" *ngIf="album && !editMode">
+    <div class="album-detail-cover" *ngIf="!editMode">
+      <div class="album-hero-cover-frame" *ngIf="album.cover_url; else albumCoverPlaceholder">
+        <img [src]="album.cover_url" [alt]="album.name" />
+      </div>
+      <ng-template #albumCoverPlaceholder>
+        <div class="album-hero-cover-placeholder">
+          <mat-icon>photo_library</mat-icon>
+          <span>等待封面</span>
+        </div>
+      </ng-template>
+    </div>
+
+    <div class="album-detail-meta" *ngIf="!editMode">
+      <span class="hero-eyebrow">Album</span>
       <h1 class="selectable">{{ album.name }}</h1>
-      <p class="album-description selectable" *ngIf="album.description">{{ album.description }}</p>
-      <div class="album-meta">
-        <span><mat-icon>photo</mat-icon> {{ images.length }} 张图片</span>
-        <span><mat-icon>schedule</mat-icon> {{ formatDate(album.created) }}</span>
+      <p class="album-description hero-description selectable" *ngIf="album.description">{{ album.description }}</p>
+      <div class="hero-stats">
+        <span class="hero-chip"><mat-icon>photo_library</mat-icon> {{ images.length }} 张内容</span>
+        <span class="hero-chip"><mat-icon>schedule</mat-icon> {{ formatDate(album.created) }}</span>
       </div>
     </div>
 
-    <!-- 编辑模式 -->
-    <div class="header-edit" *ngIf="album && editMode">
+    <div class="header-edit" *ngIf="editMode">
       <mat-form-field appearance="outline">
         <mat-label>相册名称</mat-label>
         <input matInput [(ngModel)]="editForm.name" maxlength="50" />
@@ -26,7 +37,7 @@
       </mat-form-field>
     </div>
 
-    <div class="header-actions">
+    <div class="album-detail-actions">
       <ng-container *ngIf="!editMode">
         <button mat-icon-button (click)="startEdit()" title="编辑相册">
           <mat-icon>edit</mat-icon>
@@ -37,28 +48,31 @@
       </ng-container>
       <ng-container *ngIf="editMode">
         <button mat-button (click)="cancelEdit()">取消</button>
-        <button mat-raised-button color="primary" (click)="saveEdit()" [disabled]="!editForm.name.trim()">
-          保存
-        </button>
+        <button mat-raised-button color="primary" (click)="saveEdit()" [disabled]="!editForm.name.trim()">保存</button>
       </ng-container>
     </div>
   </div>
 
-  <!-- 加载状态 -->
   <div class="loading-container" *ngIf="loading">
     <mat-progress-bar mode="indeterminate"></mat-progress-bar>
-    <p>加载中...</p>
+    <p>正在加载相册内容...</p>
   </div>
 
-  <!-- 图片网格 -->
   <div class="images-grid" *ngIf="!loading && images.length > 0">
     <div class="image-item" *ngFor="let image of images">
+      <div class="media-badge">
+        <mat-icon>{{ isVideoImage(image) ? 'play_circle' : 'image' }}</mat-icon>
+        <span>{{ isVideoImage(image) ? 'VIDEO' : 'IMAGE' }}</span>
+      </div>
+
       <div class="image-wrapper" (click)="handleItemClick(image)">
         <img [src]="getThumbnailUrl(image)" [alt]="image.file_name || '图片'" loading="lazy" (error)="onImageError($event)" (load)="onImageLoad(image, $event)" />
         <div class="image-overlay">
           <mat-icon>{{ getOverlayIcon(image) }}</mat-icon>
+          <span>{{ isVideoImage(image) ? '播放内容' : '查看详情' }}</span>
         </div>
       </div>
+
       <div class="image-actions">
         <button mat-icon-button (click)="setAsCover(image)" title="设为封面">
           <mat-icon>photo_camera</mat-icon>
@@ -67,24 +81,30 @@
           <mat-icon>remove_circle</mat-icon>
         </button>
       </div>
-      <div class="image-name selectable" *ngIf="image.file_name">{{ image.file_name }}</div>
+
+      <div class="media-card-footer">
+        <div class="media-card-title">{{ image.file_name || '未命名内容' }}</div>
+        <div class="media-card-subtitle">
+          <span>{{ image.created | date:'yyyy-MM-dd HH:mm' }}</span>
+          <span class="media-card-dot"></span>
+          <span>#{{ image.id | slice:0:8 }}</span>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- 空状态 -->
   <div class="empty-state" *ngIf="!loading && images.length === 0">
     <mat-icon>photo_library</mat-icon>
-    <h2>相册是空的</h2>
-    <p>在"我的图片"或"我的视频"页面右键，选择"添加到相册"</p>
-    <button mat-stroked-button routerLink="/images" class="add-btn">
+    <h2>相册还是空的</h2>
+    <p>在“我的图片”或“我的视频”里，将内容加入这个相册即可。</p>
+    <button mat-stroked-button [routerLink]="['/images', 1]" class="add-btn">
       <mat-icon>image</mat-icon>
-      <span>去添加</span>
+      <span>去添加内容</span>
     </button>
   </div>
 </div>
 
-<!-- 全屏视频播放器 -->
-<ng-container *ngIf="viewerOpen">
+<ng-template #viewerTemplate>
   <div class="video-viewer">
     <div class="video-viewer-backdrop" (click)="closeViewer()"></div>
 
@@ -101,27 +121,23 @@
       </video>
     </div>
 
-    <!-- 左右切换按钮 -->
     <button class="video-viewer-nav video-viewer-prev" (click)="viewerPrev()" title="上一个">
       <mat-icon>chevron_left</mat-icon>
     </button>
     <button class="video-viewer-nav video-viewer-next" (click)="viewerNext()" title="下一个">
       <mat-icon>chevron_right</mat-icon>
     </button>
-
-    <!-- 关闭按钮 -->
     <button class="video-viewer-close" (click)="closeViewer()" title="关闭">
       <mat-icon>close</mat-icon>
     </button>
 
-    <!-- 底部信息栏 -->
     <div class="video-viewer-info">
       <div class="video-viewer-info-left">
-        <div class="video-name" *ngIf="viewerImage?.file_name">{{ viewerImage?.file_name }}</div>
+        <div class="viewer-name" *ngIf="viewerImage?.file_name">{{ viewerImage?.file_name }}</div>
         <div class="video-meta">
           {{ viewerIndex + 1 }} / {{ images.length }} · {{ viewerImage?.created | date:'yyyy-MM-dd HH:mm' }}
         </div>
       </div>
     </div>
   </div>
-</ng-container>
+</ng-template>

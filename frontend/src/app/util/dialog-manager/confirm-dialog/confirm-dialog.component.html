@@ -1,14 +1,19 @@
-<div class="dialog-text">
-  <h2>{{ data.title }}</h2>
-  <p>{{ data.description }}</p>
-</div>
-<div class="dialog-buttons">
-  <button
-    *ngFor="let button of data.buttons"
-    mat-button
-    [color]="button.color"
-    (click)="onButton(button.name)"
-  >
-    {{ button.text.toUpperCase() }}
-  </button>
+<div class="confirm-dialog media-dialog-shell">
+  <div class="confirm-dialog__header">
+    <span class="confirm-dialog__eyebrow">Confirm</span>
+    <h2>{{ data.title }}</h2>
+    <p *ngIf="data.description">{{ data.description }}</p>
+  </div>
+
+  <div class="confirm-dialog__actions">
+    <button
+      *ngFor="let button of data.buttons"
+      mat-button
+      [color]="button.color"
+      [class.confirm-dialog__button--danger]="button.color === 'warn'"
+      (click)="onButton(button.name)"
+    >
+      {{ button.text }}
+    </button>
+  </div>
 </div>

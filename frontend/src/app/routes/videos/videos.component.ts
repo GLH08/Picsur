@@ -1,4 +1,4 @@
-import { Component, HostListener, OnInit, ViewEncapsulation } from '@angular/core';
+import { Component, HostListener, OnInit, ViewChild, ElementRef, ViewEncapsulation, TemplateRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AutoUnsubscribe } from 'ngx-auto-unsubscribe-decorator';
 import { SupportedVideoFileTypes } from 'picsur-shared/dist/dto/mimes.dto';
@@ -11,12 +11,13 @@ import { Logger } from '../../services/logger/logger.service';
 import { BSScreenSize, BootstrapService } from '../../util/bootstrap.service';
 import { DialogService } from '../../util/dialog-manager/dialog.service';
 import { ErrorService } from '../../util/error-manager/error.service';
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { ShareDialogComponent, ShareDialogData } from '../../components/share-dialog/share-dialog.component';
 import { StorageService, STORAGE_CONFIGS } from '../../services/storage/storage.service';
 import { AlbumPickerComponent, AlbumPickerData } from '../../components/album-picker/album-picker.component';
 
 interface VideoGroup {
+  key: string;
   title: string;
   videos: EImage[];
   collapsed: boolean;
@@ -53,6 +54,9 @@ export class VideosComponent implements OnInit {
   viewerIndex = 0;
   viewerZoom = 100;
 
+  @ViewChild('viewerTemplate') viewerTemplate!: TemplateRef<any>;
+  private dialogRef: MatDialogRef<any> | null = null;
+
   // 标签管理面板状态
   tagPanelOpen = false;
   tagPanelVideo: EImage | null = null;
@@ -63,6 +67,7 @@ export class VideosComponent implements OnInit {
   selectionMode = false;
   selectedIds = new Set<string>();
   lastSelectedId: string | null = null;
+  private readonly collapsedGroupKeys = new Set<string>();
 
   // 搜索
   searchQuery = '';
@@ -73,6 +78,7 @@ export class VideosComponent implements OnInit {
   contextMenuX = 0;
   contextMenuY = 0;
   contextMenuVideo: EImage | null = null;
+  @ViewChild('contextMenu') contextMenuRef: ElementRef<HTMLElement> | null = null;
 
   // 视频格式缓存
   private videoFormatCache = new Map<string, string>();
@@ -100,7 +106,6 @@ export class VideosComponent implements OnInit {
     const videos = this.videos;
     if (!videos || videos.length === 0) return [];
 
-    // 按日期分组
     const groups = new Map<string, EImage[]>();
 
     videos.forEach((video: EImage) => {
@@ -113,22 +118,18 @@ export class VideosComponent implements OnInit {
       groups.get(dateKey)!.push(video);
     });
 
-    // 转换为数组并按日期降序排序
-    const result: VideoGroup[] = [];
-    const sortedKeys = Array.from(groups.keys()).sort((a, b) => b.localeCompare(a));
+    return Array.from(groups.keys())
+      .sort((a, b) => b.localeCompare(a))
+      .map((dateKey) => {
+        const [year, month, day] = dateKey.split('-');
 
-    sortedKeys.forEach((dateKey) => {
-      const [year, month, day] = dateKey.split('-');
-      const title = `${year}/${month}/${day}`;
-
-      result.push({
-        title,
-        videos: groups.get(dateKey)!,
-        collapsed: false,
+        return {
+          key: dateKey,
+          title: `${year}/${month}/${day}`,
+          videos: groups.get(dateKey)!,
+          collapsed: this.collapsedGroupKeys.has(dateKey),
+        };
       });
-    });
-
-    return result;
   }
 
   page = 1;
@@ -244,12 +245,30 @@ export class VideosComponent implements OnInit {
     this.viewerIndex = this.videos?.findIndex((v) => v.id === video.id) ?? 0;
     this.viewerOpen = true;
     document.body.style.overflow = 'hidden';
+
+    // Mount using CDK Overlay explicitly bypassing CSS containing blocks
+    if (this.viewerTemplate && !this.dialogRef) {
+      this.dialogRef = this.dialog.open(this.viewerTemplate, {
+        panelClass: 'picsur-viewer-overlay-dialog',
+        hasBackdrop: false,
+        disableClose: true,
+        maxWidth: '100vw',
+        maxHeight: '100vh',
+        width: '100vw',
+        height: '100vh',
+        autoFocus: false
+      });
+    }
   }
 
   closeViewer() {
     this.viewerOpen = false;
     this.viewerVideo = null;
     document.body.style.overflow = '';
+    if (this.dialogRef) {
+      this.dialogRef.close();
+      this.dialogRef = null;
+    }
   }
 
   viewerPrev() {
@@ -363,6 +382,10 @@ export class VideosComponent implements OnInit {
   async deleteVideo(video: EImage, event?: Event) {
     event?.stopPropagation();
 
+    if (this.contextMenuVisible) {
+      this.closeContextMenu();
+    }
+
     const pressedButton = await this.dialogService.showDialog({
       title: `确定要删除这个视频吗？`,
       description: '此操作无法撤销。',
@@ -386,8 +409,15 @@ export class VideosComponent implements OnInit {
     }
   }
 
-  toggleGroup(group: VideoGroup) {
-    group.collapsed = !group.collapsed;
+  toggleGroup(groupKey: string, event?: Event) {
+    event?.stopPropagation();
+
+    if (this.collapsedGroupKeys.has(groupKey)) {
+      this.collapsedGroupKeys.delete(groupKey);
+      return;
+    }
+
+    this.collapsedGroupKeys.add(groupKey);
   }
 
   gotoPage(page: number) {
@@ -477,6 +507,10 @@ export class VideosComponent implements OnInit {
   async deleteSelected() {
     if (this.selectedIds.size === 0) return;
 
+    if (this.contextMenuVisible) {
+      this.closeContextMenu();
+    }
+
     const pressedButton = await this.dialogService.showDialog({
       title: `确定要删除选中的 ${this.selectedIds.size} 个视频吗？`,
       description: '此操作无法撤销。',
@@ -557,6 +591,18 @@ export class VideosComponent implements OnInit {
     this.contextMenuX = x;
     this.contextMenuY = y;
     this.contextMenuVisible = true;
+
+    // 渲染后根据实际高度调整位置
+    requestAnimationFrame(() => {
+      if (this.contextMenuRef?.nativeElement) {
+        const menuHeight = this.contextMenuRef.nativeElement.offsetHeight;
+        const actualY = this.contextMenuY;
+        const maxY = viewportHeight - menuHeight - CONTEXT_MENU.MARGIN;
+        if (actualY > maxY) {
+          this.contextMenuY = Math.max(CONTEXT_MENU.MARGIN, maxY);
+        }
+      }
+    });
   }
 
   closeContextMenu() {
@@ -597,8 +643,7 @@ export class VideosComponent implements OnInit {
     if (!this.contextMenuVideo) return;
 
     const video = this.contextMenuVideo;
-    const format = await this.getVideoFormatAsync(video.id);
-    const videoUrl = this.imageService.GetImageURL(video.id, format, true, video.created);
+    const videoUrl = this.getThumbnailUrl(video);
 
     this.dialog.open(AlbumPickerComponent, {
       data: {
@@ -618,6 +663,14 @@ export class VideosComponent implements OnInit {
     this.closeContextMenu();
   }
 
+  trackByGroup(_index: number, group: VideoGroup) {
+    return group.key;
+  }
+
+  trackByVideo(_index: number, video: EImage) {
+    return video.id;
+  }
+
   private async copyToClipboard(text: string, successMsg: string) {
     try {
       await navigator.clipboard.writeText(text);
@@ -635,7 +688,11 @@ export class VideosComponent implements OnInit {
 
   async deleteContextVideo() {
     if (!this.contextMenuVideo) return;
-    await this.deleteVideo(this.contextMenuVideo);
+
+    const video = this.contextMenuVideo;
     this.closeContextMenu();
+    await this.deleteVideo(video);
   }
 }
+
+

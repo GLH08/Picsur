@@ -1,76 +1,125 @@
-<div class="container centered">
-  <div class="row">
-    <div class="col-12">
-      <h1>
-        {{ image?.file_name ?? 'image' | truncate }}
-      </h1>
+<div class="view-page media-page-shell" *ngIf="metadata !== null; else loadingState">
+  <div class="view-page__hero images-header media-hero">
+    <div class="header-left">
+      <span class="hero-eyebrow">{{ isVideo ? 'Video Detail' : 'Image Detail' }}</span>
+      <h1 class="hero-title">{{ image?.file_name ?? 'image' | truncate }}</h1>
+      <div class="hero-stats">
+        <span class="hero-chip"><mat-icon>{{ isVideo ? 'play_circle' : 'image' }}</mat-icon> {{ isVideo ? '视频' : '图片' }}</span>
+        <span class="hero-chip"><mat-icon>person</mat-icon> {{ user?.username || '未知用户' }}</span>
+        <span class="hero-chip"><mat-icon>schedule</mat-icon> {{ image?.created | date:'yyyy-MM-dd HH:mm' }}</span>
+        <span class="hero-chip" *ngIf="image?.expires_at !== null"><mat-icon>timer</mat-icon> {{ image?.expires_at | date:'yyyy-MM-dd HH:mm' }}</span>
+      </div>
     </div>
-
-    <div class="col-12" *ngIf="image !== null">
-      <h3>
-        由 {{ user?.username }} 于 {{ image.created | date:'yyyy-MM-dd HH:mm:ss' }} 上传
-        <span *ngIf="image.expires_at !== null">
-          | 过期时间：{{ image.expires_at | date:'yyyy-MM-dd HH:mm:ss' }}
-        </span>
-      </h3>
-    </div>
-
-    <div class="col-12 py-3">
-      <!-- Video player -->
-      <video
-        *ngIf="isVideo"
-        class="uploadedmedia"
-        [src]="videoLink"
-        controls
-        autoplay
-        playsinline
-      >
-        您的浏览器不支持视频播放
-      </video>
-      <!-- Image display -->
-      <picsur-img
-        *ngIf="!isVideo"
-        class="uploadedimage"
-        [src]="previewLink"
-      ></picsur-img>
-    </div>
-
-    <div class="col-md-6 col-12">
-      <copy-field label="图片链接" [value]="imageLinks.source"></copy-field>
-    </div>
-
-    <div class="col-md-6 col-12">
-      <mat-form-field appearance="outline" color="primary">
-        <mat-label>图片格式</mat-label>
-        <mat-select [(value)]="selectedFormat">
-          <mat-option *ngFor="let format of formatOptions" [value]="format.key">
-            {{ format.value }}
-          </mat-option>
-        </mat-select>
-      </mat-form-field>
-    </div>
-
-    <div class="col-12 mb-3">
-      <mat-divider class="" [inset]="false"></mat-divider>
-    </div>
-
-    <div class="col-md-6 col-12">
-      <copy-field label="Markdown" [value]="imageLinks.markdown"></copy-field>
-    </div>
-    <div class="col-md-6 col-12">
-      <copy-field label="HTML" [value]="imageLinks.html"></copy-field>
-    </div>
-    <div class="col-md-6 col-12">
-      <copy-field label="BBCode" [value]="imageLinks.bbcode"></copy-field>
-    </div>
-    <div class="col-md-6 col-12">
-      <copy-field label="Rst" [value]="imageLinks.rst"></copy-field>
+    <div class="header-actions view-page__hero-actions">
+      <button mat-stroked-button (click)="goBackHome()">
+        <mat-icon>arrow_back</mat-icon>
+        返回首页
+      </button>
     </div>
   </div>
+
+  <div class="view-page__layout">
+    <section class="view-page__media-card glass-panel">
+      <div class="view-page__media-frame">
+        <video
+          *ngIf="isVideo"
+          class="view-page__media"
+          [src]="videoLink"
+          controls
+          autoplay
+          playsinline
+        >
+          您的浏览器不支持视频播放
+        </video>
+        <picsur-img
+          *ngIf="!isVideo"
+          class="view-page__media"
+          [src]="previewLink"
+        ></picsur-img>
+      </div>
+    </section>
+
+    <aside class="view-page__sidebar">
+      <section class="view-page__panel glass-panel">
+        <div class="view-page__panel-head">
+          <h2>格式与直链</h2>
+          <span>Primary</span>
+        </div>
+        <mat-form-field appearance="outline" color="primary">
+          <mat-label>输出格式</mat-label>
+          <mat-select [(value)]="selectedFormat">
+            <mat-option *ngFor="let format of formatOptions" [value]="format.key">
+              {{ format.value }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+        <copy-field label="图片链接" [value]="imageLinks.source"></copy-field>
+      </section>
+
+      <section class="view-page__panel glass-panel">
+        <div class="view-page__panel-head">
+          <h2>媒体信息</h2>
+          <span>Meta</span>
+        </div>
+        <div class="view-page__meta-list">
+          <div class="view-page__meta-item">
+            <span class="view-page__meta-label">类型</span>
+            <strong>{{ isVideo ? '视频' : '图片' }}</strong>
+          </div>
+          <div class="view-page__meta-item">
+            <span class="view-page__meta-label">上传者</span>
+            <strong>{{ user?.username || '未知用户' }}</strong>
+          </div>
+          <div class="view-page__meta-item">
+            <span class="view-page__meta-label">创建时间</span>
+            <strong>{{ image?.created | date:'yyyy-MM-dd HH:mm:ss' }}</strong>
+          </div>
+          <div class="view-page__meta-item" *ngIf="image?.expires_at !== null">
+            <span class="view-page__meta-label">过期时间</span>
+            <strong>{{ image?.expires_at | date:'yyyy-MM-dd HH:mm:ss' }}</strong>
+          </div>
+        </div>
+      </section>
+    </aside>
+  </div>
+
+  <section class="view-page__links">
+    <div class="view-page__panel glass-panel">
+      <div class="view-page__panel-head">
+        <h2>嵌入链接</h2>
+        <span>Embed</span>
+      </div>
+      <div class="view-page__link-grid">
+        <div class="view-page__link-card">
+          <copy-field label="Markdown" [value]="imageLinks.markdown"></copy-field>
+        </div>
+        <div class="view-page__link-card">
+          <copy-field label="HTML" [value]="imageLinks.html"></copy-field>
+        </div>
+        <div class="view-page__link-card">
+          <copy-field label="BBCode" [value]="imageLinks.bbcode"></copy-field>
+        </div>
+        <div class="view-page__link-card">
+          <copy-field label="Rst" [value]="imageLinks.rst"></copy-field>
+        </div>
+      </div>
+    </div>
+  </section>
 </div>
+
+<ng-template #loadingState>
+  <div class="view-page media-page-shell">
+    <div class="loading-container glass-panel">
+      <div class="view-page__loading-orb"></div>
+      <p>正在加载媒体详情...</p>
+    </div>
+  </div>
+</ng-template>
 
 <view-speeddial
   [selectedFormat]="selectedFormat"
   [metadata]="metadata"
   (metadataChange)="OnMetadata = $event"
 ></view-speeddial>
+
+

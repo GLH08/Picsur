@@ -6,32 +6,123 @@
   position: relative;
 }
 
+.app-shell {
+  position: relative;
+  // Fill app-root's flex column so mat-sidenav-container gets a proper height reference
+  flex: 1;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-shell__backdrop {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: -1;
+}
+
+.app-shell__orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(70px);
+  opacity: 0.8;
+}
+
+.app-shell__orb--a {
+  top: 88px;
+  left: -80px;
+  width: 260px;
+  height: 260px;
+  background: rgba(124, 198, 255, 0.28);
+}
+
+.app-shell__orb--b {
+  top: 18%;
+  right: -120px;
+  width: 320px;
+  height: 320px;
+  background: rgba(120, 229, 214, 0.2);
+}
+
+.app-shell__orb--c {
+  right: 8%;
+  bottom: -120px;
+  width: 280px;
+  height: 280px;
+  background: rgba(255, 215, 149, 0.22);
+}
+
 .header-spacer {
-  height: 64px;
-  margin-bottom: 32px;
+  height: calc(var(--header-height) + 12px);
   flex-shrink: 0;
 }
 
-.sidenav-nav {
-  margin-top: 64px;
-  width: 220px;
-  border-right: none !important;
-}
-
-.sidenav-content {
-  display: flex;
-  flex-direction: column;
+.app-shell__drawer {
+  background: transparent;
+  // mat-sidenav-container MUST have an explicit height.
+  // Without this, when the sidenav opens in 'side' mode the content area shrinks
+  // because Angular Material uses absolute positioning internally relative to the container height.
+  flex: 1;
+  min-height: 0;
   height: 100%;
 }
 
-// 隐藏侧边栏拖动手柄
+.sidenav-nav {
+  margin-top: calc(var(--header-height) + 12px);
+  width: min(300px, calc(100vw - 24px));
+  padding: 12px;
+  background: transparent !important;
+}
+
+.app-shell__content {
+  // Use height (not just min-height) so the mat-sidenav-container can measure its
+  // containing block and won't shrink the content column when the sidenav opens.
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 24px;
+}
+
+.app-shell__route-frame {
+  width: min(100% - 28px, calc(var(--shell-max-width) + 48px));
+  margin: 0 auto;
+  flex: 1;
+}
+
+.app-shell__route-frame--contained {
+  width: min(100% - 28px, var(--shell-narrow-width));
+}
+
 ::ng-deep .mat-drawer-inner-container {
   overflow-x: hidden !important;
 }
 
-::ng-deep mat-sidenav {
-  // 移除拖动边框
-  &::after {
-    display: none !important;
+::ng-deep .sidenav-nav .mat-drawer-inner-container {
+  border-radius: var(--radius-2xl);
+  background: var(--surface-glass);
+  border: 1px solid var(--border-soft);
+  box-shadow: var(--shadow-float);
+  backdrop-filter: blur(var(--blur-lg));
+  -webkit-backdrop-filter: blur(var(--blur-lg));
+}
+
+::ng-deep mat-sidenav::after {
+  display: none !important;
+}
+
+@media (max-width: 768px) {
+  .app-shell__route-frame,
+  .app-shell__route-frame--contained {
+    width: min(100% - 16px, var(--shell-max-width));
+  }
+
+  .header-spacer {
+    height: calc(var(--header-height) + 6px);
+  }
+
+  .sidenav-nav {
+    margin-top: 12px;
   }
 }

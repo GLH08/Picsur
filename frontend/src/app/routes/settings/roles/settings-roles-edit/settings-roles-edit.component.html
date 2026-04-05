@@ -1,58 +1,78 @@
-<ng-container *ngIf="editing">
-  <h1>Editing role "{{ model.rolenameValue }}"</h1>
-</ng-container>
-<ng-container *ngIf="adding">
-  <h1>Add new role</h1>
-</ng-container>
+<div class="settings-subpage media-page-shell settings-edit-page">
+  <div class="images-header media-hero settings-edit-page__hero">
+    <div class="header-left">
+      <h1>{{ editing ? '编辑角色' : '创建角色' }}</h1>
+    </div>
 
-<form (ngSubmit)="updateRole()">
-  <div class="row" *ngIf="adding">
-    <div class="col-lg-6 col-12">
-      <mat-form-field appearance="outline">
-        <mat-label>Role name</mat-label>
-        <input
-          matInput
-          type="text"
-          [formControl]="model.rolename"
-          name="rolename"
-          autocorrect="off"
-          autocapitalize="none"
-          required
-        />
-        <mat-error *ngIf="model.rolename.errors">
-          {{ model.rolenameError }}
-        </mat-error>
-      </mat-form-field>
+    <div class="settings-edit-page__hero-meta">
+      <span class="settings-edit-page__meta-pill">{{ editing ? 'Editing' : 'Creating' }}</span>
+      <span class="settings-edit-page__meta-pill" *ngIf="editing">{{ model.rolenameValue }}</span>
+      <span class="settings-edit-page__meta-pill" *ngIf="lockedPermissions.length > 0">Locked Permissions</span>
     </div>
   </div>
 
-  <div class="row">
-    <div class="col-lg-6 col-12">
-      <values-picker
-        name="permission"
-        [value-mapper]="UIFriendlyPermission"
-        [control]="model.permissions"
-        [disabled-list]="lockedPermissions"
-        [selection-list]="allPermissions"
-      ></values-picker>
-    </div>
-  </div>
+  <form class="settings-edit-page__form glass-panel" (ngSubmit)="updateRole()">
+    <div class="settings-edit-page__grid settings-edit-page__grid--single">
+      <section class="settings-edit-page__card">
+        <div class="settings-edit-page__section-head">
+          <div>
+            <h2>角色信息</h2>
+            <p>{{ adding ? '先命名角色，再分配可用权限。' : '已有角色名称固定，仅调整其权限集合。' }}</p>
+          </div>
+        </div>
 
-  <div class="row">
-    <div class="col-12 py-4">
+        <div class="settings-edit-page__fields" *ngIf="adding">
+          <mat-form-field appearance="outline">
+            <mat-label>Role name</mat-label>
+            <input
+              matInput
+              type="text"
+              [formControl]="model.rolename"
+              name="rolename"
+              autocorrect="off"
+              autocapitalize="none"
+              required
+            />
+            <mat-error *ngIf="model.rolename.errors">
+              {{ model.rolenameError }}
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="settings-edit-page__fields">
+          <values-picker
+            name="permission"
+            [value-mapper]="UIFriendlyPermission"
+            [control]="model.permissions"
+            [disabled-list]="lockedPermissions"
+            [selection-list]="allPermissions"
+          ></values-picker>
+        </div>
+      </section>
+    </div>
+
+    <section class="settings-edit-page__card settings-edit-page__card--wide" *ngIf="lockedPermissions.length > 0">
+      <div class="settings-edit-page__section-head">
+        <div>
+          <h2>系统保留权限</h2>
+          <p>这些权限由系统角色锁定，无法在当前页面移除。</p>
+        </div>
+        <span class="settings-edit-page__count">{{ lockedPermissions.length }} 项</span>
+      </div>
+
+      <mat-chip-listbox aria-label="Locked Permissions">
+        <mat-chip *ngFor="let permission of lockedPermissions" [disableRipple]="true">
+          {{ UIFriendlyPermission(permission) }}
+        </mat-chip>
+      </mat-chip-listbox>
+    </section>
+
+    <div class="settings-edit-page__actions">
+      <button mat-button type="button" (click)="cancel()">取消</button>
       <button mat-raised-button type="submit" color="primary">
-        {{ editing ? 'UPDATE' : 'ADD' }}
-      </button>
-
-      <button
-        mat-raised-button
-        class="ms-2"
-        color="accent"
-        type="button"
-        (click)="cancel()"
-      >
-        CANCEL
+        {{ editing ? '保存更新' : '创建角色' }}
       </button>
     </div>
-  </div>
-</form>
+  </form>
+</div>
+

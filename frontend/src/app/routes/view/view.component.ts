@@ -8,12 +8,7 @@ import {
 import { ActivatedRoute, Router } from '@angular/router';
 import { ImageMetaResponse } from 'picsur-shared/dist/dto/api/image.dto';
 import { ImageLinks } from 'picsur-shared/dist/dto/image-links.class';
-import {
-  AnimFileType,
-  ImageFileType,
-  SupportedFileTypeCategory,
-  SupportedVideoFileTypes,
-} from 'picsur-shared/dist/dto/mimes.dto';
+import { ImageFileType, SupportedVideoFileTypes } from 'picsur-shared/dist/dto/mimes.dto';
 import { EImage } from 'picsur-shared/dist/entities/image.entity';
 import { EUser } from 'picsur-shared/dist/entities/user.entity';
 
@@ -43,7 +38,7 @@ export class ViewComponent implements OnInit, OnDestroy {
     private readonly errorService: ErrorService,
     private readonly utilService: UtilService,
     private readonly changeDetector: ChangeDetectorRef,
-  ) { }
+  ) {}
 
   private id = '';
   public metadata: ImageMetaResponse | null = null;
@@ -78,12 +73,16 @@ export class ViewComponent implements OnInit, OnDestroy {
   public get previewLink(): string {
     if (this.metadata === null) return '';
 
-    // Get width of screen in pixels
-    const width = window.innerWidth * window.devicePixelRatio;
+    const width = Math.round(window.innerWidth * window.devicePixelRatio);
+    const previewFormat = this.getPreviewFormat();
 
     return (
-      this.imageService.GetImageURL(this.id, this.metadata.fileTypes.master, false, this.image?.created) +
-      (width > 1 ? `?width=${width}&shrinkonly=yes` : '')
+      this.imageService.GetImageURL(
+        this.id,
+        previewFormat,
+        false,
+        this.image?.created,
+      ) + (width > 1 ? `?width=${width}&shrinkonly=yes` : '')
     );
   }
 
@@ -95,7 +94,12 @@ export class ViewComponent implements OnInit, OnDestroy {
 
   public get videoLink(): string {
     if (this.metadata === null) return '';
-    return this.imageService.GetImageURL(this.id, this.metadata.fileTypes.master, false, this.image?.created);
+    return this.imageService.GetImageURL(
+      this.id,
+      this.getOutputFormat() ?? this.metadata.fileTypes.master,
+      false,
+      this.image?.created,
+    );
   }
 
   private imageLinksCache: Record<string, ImageLinks> = {};
@@ -103,20 +107,18 @@ export class ViewComponent implements OnInit, OnDestroy {
     if (this.imageLinksCache[this.selectedFormat] !== undefined)
       return this.imageLinksCache[this.selectedFormat];
 
-    const format = this.selectedFormat;
     const links = this.imageService.CreateImageLinksFromID(
       this.id,
-      format === 'original' ? null : format,
+      this.getOutputFormat(),
       this.image?.file_name,
       this.image?.created,
     );
 
-    this.imageLinksCache[format] = links;
+    this.imageLinksCache[this.selectedFormat] = links;
     return links;
   }
 
   async ngOnInit() {
-    // Extract and verify params
     {
       const params = this.route.snapshot.paramMap;
 
@@ -126,7 +128,6 @@ export class ViewComponent implements OnInit, OnDestroy {
       }
     }
 
-    // Get metadata
     {
       const metadata = await this.imageService.GetImageMeta(this.id);
       if (HasFailed(metadata))
@@ -143,14 +144,13 @@ export class ViewComponent implements OnInit, OnDestroy {
       this.imageLinksCache = {};
     }
 
-    // Populate default selected format - 使用图片原始格式
     {
       const masterFiletype = ParseFileType(this.metadata.fileTypes.master);
       if (HasFailed(masterFiletype)) {
-        // 解析失败时回退到 JPEG
+        this.selectedFormat = ImageFileType.JPEG;
+      } else if (masterFiletype.identifier === ImageFileType.QOI) {
         this.selectedFormat = ImageFileType.JPEG;
       } else {
-        // 直接使用图片的原始格式作为默认显示格式
         this.selectedFormat = masterFiletype.identifier;
       }
     }
@@ -167,6 +167,29 @@ export class ViewComponent implements OnInit, OnDestroy {
     this.router.navigate(['/']);
   }
 
+  private getOutputFormat(): string | null {
+    if (this.selectedFormat === 'original') {
+      return null;
+    }
+
+    return this.selectedFormat;
+  }
+
+  private getPreviewFormat(): string {
+    if (this.metadata === null) {
+      return ImageFileType.JPEG;
+    }
+
+    const requestedFormat =
+      this.getOutputFormat() ?? this.metadata.fileTypes.master;
+
+    if (requestedFormat === ImageFileType.QOI) {
+      return ImageFileType.JPEG;
+    }
+
+    return requestedFormat;
+  }
+
   private updateFormatOptions() {
     let newOptions: {
       value: string;
@@ -180,7 +203,6 @@ export class ViewComponent implements OnInit, OnDestroy {
       });
     }
 
-    // Videos don't have format conversion options
     if (!this.isVideo) {
       newOptions = newOptions.concat(this.utilService.getBaseFormatOptions());
     }

@@ -1,0 +1,125 @@
+html,
+body {
+  height: 100%;
+  color-scheme: light;
+}
+
+html {
+  box-sizing: border-box;
+  font-family: 'Roboto', sans-serif;
+}
+
+*,
+*:before,
+*:after {
+  box-sizing: inherit;
+}
+
+body {
+  margin: 0;
+  min-height: 100%;
+  color: var(--text-primary);
+  background:
+    radial-gradient(circle at 14% 18%, var(--bg-orb-a), transparent 28%),
+    radial-gradient(circle at 85% 12%, var(--bg-orb-b), transparent 24%),
+    radial-gradient(circle at 78% 78%, var(--bg-orb-c), transparent 22%),
+    linear-gradient(160deg, var(--bg-gradient-start), var(--bg-gradient-end));
+  background-attachment: fixed;
+  line-height: 1.5;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+
+body::before,
+body::after {
+  content: '';
+  position: fixed;
+  inset: auto;
+  border-radius: 50%;
+  pointer-events: none;
+  filter: blur(80px);
+  opacity: 0.55;
+  z-index: -1;
+}
+
+body::before {
+  top: -90px;
+  right: -120px;
+  width: 320px;
+  height: 320px;
+  background: rgba(111, 185, 255, 0.22);
+}
+
+body::after {
+  left: -100px;
+  bottom: -100px;
+  width: 300px;
+  height: 300px;
+  background: rgba(116, 223, 208, 0.16);
+}
+
+app-root {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  isolation: isolate;
+}
+
+img,
+button,
+.mat-icon,
+.no-select {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+p,
+span,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+div,
+a,
+label,
+.selectable,
+input,
+textarea {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+a {
+  color: inherit;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+router-outlet ~ * {
+  display: block;
+  min-height: 100%;
+  width: 100%;
+}
+
+::selection {
+  background: rgba(35, 120, 255, 0.18);
+}
+

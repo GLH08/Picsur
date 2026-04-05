@@ -1,32 +1,38 @@
-<app-header
-  [enableHamburger]="hasSidebar && !isDesktop"
-  (onHamburgerClick)="sidebar.toggle()"
-  [loading]="loading"
-></app-header>
+<div class="app-shell">
+  <div class="app-shell__backdrop">
+    <span class="app-shell__orb app-shell__orb--a"></span>
+    <span class="app-shell__orb app-shell__orb--b"></span>
+    <span class="app-shell__orb app-shell__orb--c"></span>
+  </div>
 
-<!-- 全局拖拽上传遮罩 -->
-<app-drag-overlay></app-drag-overlay>
+  <app-header
+    [enableHamburger]="hasSidebar && !isDesktop"
+    (onHamburgerClick)="sidebar.toggle()"
+    [loading]="loading"
+  ></app-header>
 
-<mat-sidenav-container class="grow-full">
-  <mat-sidenav
-    class="sidenav-nav"
-    [mode]="isDesktop ? 'side' : 'over'"
-    opened="false"
-  >
-    <ng-template [cdkPortalOutlet]="sidebarPortal"></ng-template>
-  </mat-sidenav>
+  <app-drag-overlay></app-drag-overlay>
 
-  <mat-sidenav-content>
-    <div class="sidenav-content" [class.container]="wrapContentWithContainer">
-      <div class="header-spacer"></div>
-      <div
-        class="grow-full relative"
-        [class.container]="wrapContentWithContainer"
-        [@mainAnimation]="getRouteAnimData()"
-      >
-        <router-outlet></router-outlet>
+  <mat-sidenav-container class="app-shell__drawer">
+    <mat-sidenav
+      class="sidenav-nav"
+      [mode]="isDesktop ? 'side' : 'over'"
+      opened="false"
+    >
+      <ng-template [cdkPortalOutlet]="sidebarPortal"></ng-template>
+    </mat-sidenav>
+
+    <mat-sidenav-content>
+      <div class="app-shell__content">
+        <div class="header-spacer"></div>
+        <main
+          class="app-shell__route-frame"
+          [class.app-shell__route-frame--contained]="wrapContentWithContainer"
+          [@mainAnimation]="getRouteAnimData()"
+        >
+          <router-outlet></router-outlet>
+        </main>
       </div>
-      <app-footer></app-footer>
-    </div>
-  </mat-sidenav-content>
-</mat-sidenav-container>
+    </mat-sidenav-content>
+  </mat-sidenav-container>
+</div>

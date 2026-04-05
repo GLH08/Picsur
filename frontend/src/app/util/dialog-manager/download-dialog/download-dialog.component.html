@@ -1,8 +1,18 @@
-<div class="dialog-text">
-  <h2>Downloading {{ data.name }}...</h2>
-  <mat-progress-bar
-    mode="determinate"
-    [value]="progress | async"
-  ></mat-progress-bar>
+<div class="download-dialog media-dialog-shell">
+  <div class="download-dialog__header">
+    <span class="download-dialog__eyebrow">Download</span>
+    <h2>正在下载 {{ data.name }}</h2>
+    <p>文件正在准备中，进度会随着浏览器下载流实时更新。</p>
+  </div>
+
+  <div class="download-dialog__content">
+    <div class="download-dialog__progress-row">
+      <span>传输进度</span>
+      <span>{{ (progress | async) ?? 0 | number:'1.0-0' }}%</span>
+    </div>
+    <mat-progress-bar
+      mode="determinate"
+      [value]="progress | async"
+    ></mat-progress-bar>
+  </div>
 </div>
-<div class="dialog-buttons"></div>

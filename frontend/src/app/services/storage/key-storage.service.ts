@@ -20,7 +20,6 @@ export class KeyStorageService {
   }
 
   public get() {
-    setTimeout(this.load.bind(this), 0);
     return this.key;
   }
 

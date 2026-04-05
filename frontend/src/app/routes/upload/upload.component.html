@@ -1,15 +1,29 @@
-<div class="content-border">
-  <my-dropzone *ngIf="canUpload">
-    <input type="file" fileInput [formControl]="fileControl" multiple accept="image/*,video/*" />
-    <div class="centered">
-      <h1>上传图片</h1>
-      <p>拖拽、粘贴或点击选择图片或视频</p>
-      <p class="hint">支持多图/视频上传</p>
+<div class="upload-page media-page-shell">
+  <div class="images-header media-hero">
+    <div class="header-left">
+      <h1>上传</h1>
     </div>
-  </my-dropzone>
-
-  <div class="centered" *ngIf="!canUpload">
-    <h1><a routerLink="/user/login">请登录</a></h1>
-    <p>您还没有上传权限</p>
   </div>
+
+  <div class="upload-page__panel" *ngIf="canUpload; else uploadDenied">
+    <my-dropzone>
+      <input type="file" fileInput [formControl]="fileControl" multiple accept="image/*,video/*" />
+      <div class="upload-page__dropzone-copy">
+        <div class="upload-page__dropzone-icon">
+          <mat-icon>cloud_upload</mat-icon>
+        </div>
+        <h2>拖拽文件到这里，或点击选择</h2>
+        <p class="upload-page__hint">支持图片、视频和剪贴板粘贴。</p>
+      </div>
+    </my-dropzone>
+  </div>
+
+  <ng-template #uploadDenied>
+    <div class="upload-page__panel upload-page__empty">
+      <mat-icon>lock</mat-icon>
+      <h2>请先登录</h2>
+      <p class="upload-page__hint">登录后即可上传图片和视频。</p>
+      <button mat-raised-button color="primary" routerLink="/user/login">登录</button>
+    </div>
+  </ng-template>
 </div>

@@ -1,0 +1,105 @@
+.page-shell {
+  width: 100%;
+}
+
+.page-shell__container {
+  width: min(100% - 32px, var(--shell-max-width));
+  margin: 0 auto;
+}
+
+.page-shell__container--narrow {
+  width: min(100% - 32px, var(--shell-narrow-width));
+}
+
+.app-surface,
+.glass-panel {
+  background: var(--surface-glass);
+  border: 1px solid var(--border-soft);
+  box-shadow: var(--shadow-soft);
+  backdrop-filter: blur(var(--blur-md));
+  -webkit-backdrop-filter: blur(var(--blur-md));
+}
+
+.app-surface {
+  border-radius: var(--radius-xl);
+}
+
+.glass-panel {
+  border-radius: var(--radius-lg);
+}
+
+.page-hero {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-5);
+  margin-bottom: var(--space-6);
+}
+
+.page-hero__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0.45rem 0.9rem;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(35, 120, 255, 0.12);
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  letter-spacing: 0.02em;
+}
+
+.page-hero__title {
+  margin: 0;
+  font-size: clamp(2rem, 4vw, 3.4rem);
+  line-height: 0.96;
+  letter-spacing: -0.05em;
+}
+
+.page-hero__subtitle {
+  max-width: 60ch;
+  margin: var(--space-3) 0 0;
+  color: var(--text-secondary);
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.section-header__title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.section-header__meta {
+  color: var(--text-tertiary);
+  font-size: 0.88rem;
+}
+
+.floating-toolbar {
+  position: sticky;
+  top: calc(var(--header-height) + 16px);
+  z-index: var(--z-toolbar);
+}
+
+@media (max-width: 768px) {
+  .page-shell__container,
+  .page-shell__container--narrow {
+    width: min(100% - 20px, var(--shell-max-width));
+  }
+
+  .page-hero {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .page-hero__title {
+    font-size: clamp(1.8rem, 8vw, 2.5rem);
+  }
+}

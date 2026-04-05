@@ -8,7 +8,6 @@ ngx-dropzone {
   border: initial;
   border-radius: initial;
   font-size: inherit;
-
   width: 100%;
   height: 100%;
 
@@ -17,22 +16,28 @@ ngx-dropzone {
   }
 }
 
-.centered {
-  padding-inline: 1rem;
+.upload-page {
+  .images-header {
+    min-height: 0;
+    padding: 18px 22px;
+  }
+
+  .header-left {
+    gap: 0;
+  }
+
+  .upload-page__dropzone-copy {
+    gap: 14px;
+  }
+
+  .upload-page__dropzone-copy h2 {
+    margin: 0;
+  }
 }
 
-// unstyle a href
-a {
-  color: inherit;
-  text-decoration: inherit;
-
-  &:hover {
-    color: inherit;
-    text-decoration: underline;
-  }
-
-  &:active {
-    color: inherit;
-    text-decoration: underline;
-  }
+.upload-page__empty mat-icon {
+  width: 56px;
+  height: 56px;
+  font-size: 56px;
+  color: var(--accent-primary-strong);
 }

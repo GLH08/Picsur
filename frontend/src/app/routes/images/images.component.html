@@ -1,34 +1,53 @@
-<div class="picsur-images">
+<div class="picsur-images media-page-shell">
   <mat-progress-spinner *ngIf="images === null"></mat-progress-spinner>
 
-  <h2 class="text-center" *ngIf="imagesSub.value !== null && totalCount <= 0">
-    没有可显示的图片
-  </h2>
+  <div class="empty-state" *ngIf="imagesSub.value !== null && totalCount <= 0">
+    <mat-icon>image_search</mat-icon>
+    <h2>还没有图片</h2>
+  </div>
 
-  <h2 class="text-center" *ngIf="imagesSub.value !== null && totalCount > 0 && filteredCount <= 0 && searchQuery">
-    没有找到匹配的图片
-  </h2>
+  <div class="empty-state" *ngIf="imagesSub.value !== null && totalCount > 0 && filteredCount <= 0 && searchQuery">
+    <mat-icon>travel_explore</mat-icon>
+    <h2>没有匹配结果</h2>
+  </div>
 
   <ng-container *ngIf="imagesSub.value !== null && totalCount > 0">
-    <div class="images-header">
+    <div class="images-header media-hero">
       <div class="header-left">
         <h1>我的图片</h1>
-        <span class="image-count" *ngIf="!searchQuery">共 {{ totalCount }} 张</span>
-        <span class="image-count" *ngIf="searchQuery">找到 {{ filteredCount }} / {{ totalCount }} 张</span>
+        <span class="header-separator">·</span>
+        <span class="header-count" *ngIf="!selectionMode">库内 {{ totalCount }} 张</span>
+        <span class="header-count selection-active" *ngIf="selectionMode">已选择 {{ selectedCount }} 张</span>
       </div>
       <div class="header-actions">
-        <button mat-icon-button (click)="toggleSearch()" [class.active]="searchActive">
-          <mat-icon>search</mat-icon>
-        </button>
-        <button mat-stroked-button (click)="toggleSelectionMode()">
-          <mat-icon>{{ selectionMode ? 'close' : 'check_box' }}</mat-icon>
-          {{ selectionMode ? '取消选择' : '选择' }}
-        </button>
+        <ng-container *ngIf="!selectionMode">
+          <button mat-icon-button (click)="toggleSearch()" [class.active]="searchActive" aria-label="切换搜索">
+            <mat-icon>search</mat-icon>
+          </button>
+          <button mat-stroked-button (click)="toggleSelectionMode()">
+            <mat-icon>check_box</mat-icon>
+            选择
+          </button>
+        </ng-container>
+        <ng-container *ngIf="selectionMode">
+          <button mat-icon-button (click)="selectAll()" title="全选">
+            <mat-icon>select_all</mat-icon>
+          </button>
+          <button mat-icon-button (click)="deselectAll()" title="取消全选">
+            <mat-icon>deselect</mat-icon>
+          </button>
+          <button mat-icon-button color="warn" (click)="deleteSelected()" [disabled]="selectedCount === 0" title="批量删除">
+            <mat-icon>delete</mat-icon>
+          </button>
+          <button mat-stroked-button (click)="toggleSelectionMode()" class="cancel-select-btn">
+            <mat-icon>close</mat-icon>
+            取消
+          </button>
+        </ng-container>
       </div>
     </div>
 
-    <!-- 搜索框 -->
-    <div class="search-bar" *ngIf="searchActive">
+    <div class="search-bar" *ngIf="searchActive && !selectionMode">
       <mat-form-field appearance="outline" class="search-field">
         <mat-label>搜索图片</mat-label>
         <input
@@ -45,43 +64,37 @@
       </mat-form-field>
     </div>
 
-    <!-- 选择模式工具栏 -->
-    <div class="selection-toolbar" *ngIf="selectionMode">
-      <div class="selection-info">已选择 {{ selectedCount }} 张</div>
-      <div class="selection-actions">
-        <button mat-button (click)="selectAll()">全选</button>
-        <button mat-button (click)="deselectAll()">取消全选</button>
-        <button mat-stroked-button color="warn" (click)="deleteSelected()" [disabled]="selectedCount === 0">
-          <mat-icon>delete</mat-icon>
-          批量删除
-        </button>
-      </div>
-    </div>
-
-    <!-- 按时间分组展示 -->
     <div class="image-groups">
-      <div class="image-group" *ngFor="let group of groupedImages">
-        <div class="group-header" (click)="toggleGroup(group)">
-          <mat-icon>{{ group.collapsed ? 'expand_more' : 'expand_less' }}</mat-icon>
-          <span class="group-title">{{ group.title }}</span>
+      <div class="image-group" *ngFor="let group of groupedImages; trackBy: trackByGroup">
+        <div class="group-header" (click)="toggleGroup(group.key, $event)">
+          <div class="group-heading">
+            <mat-icon>{{ group.collapsed ? 'expand_more' : 'expand_less' }}</mat-icon>
+            <span class="group-title">{{ group.title }}</span>
+          </div>
           <span class="group-count">{{ group.images.length }} 张</span>
         </div>
 
         <div class="image-grid" *ngIf="!group.collapsed" [style.--columns]="columns">
           <div
             class="image-item"
-            *ngFor="let image of group.images"
+            *ngFor="let image of group.images; trackBy: trackByImage"
             [class.selected]="isSelected(image)"
             (click)="handleImageClick(image, $event)"
             (contextmenu)="openContextMenu($event, image)"
           >
-            <!-- 选择复选框（Ctrl/Shift 点击时也会显示） -->
-            <div 
-              class="select-checkbox" 
+            <button
+              type="button"
+              class="select-checkbox"
               [class.visible]="selectionMode || isSelected(image)"
               (click)="toggleSelect(image, $event)"
+              [attr.aria-label]="isSelected(image) ? '取消选择图片' : '选择图片'"
             >
               <mat-icon>{{ isSelected(image) ? 'check_box' : 'check_box_outline_blank' }}</mat-icon>
+            </button>
+
+            <div class="media-badge" *ngIf="isVideoItem(image)">
+              <mat-icon>videocam</mat-icon>
+              <span>VIDEO</span>
             </div>
 
             <div class="image-wrapper">
@@ -94,7 +107,20 @@
               />
               <div *ngIf="isVideoItem(image)" class="video-placeholder">
                 <mat-icon>videocam</mat-icon>
-                <span>视频</span>
+                <span>视频内容</span>
+              </div>
+              <div class="image-overlay">
+                <mat-icon>{{ isVideoItem(image) ? 'open_in_new' : 'open_in_full' }}</mat-icon>
+                <span>{{ isVideoItem(image) ? '打开详情' : '快速预览' }}</span>
+              </div>
+            </div>
+
+            <div class="media-card-footer">
+              <div class="media-card-title">{{ image.file_name || '未命名图片' }}</div>
+              <div class="media-card-subtitle">
+                <span>{{ image.created | date:'yyyy-MM-dd HH:mm' }}</span>
+                <span class="media-card-dot"></span>
+                <span>#{{ image.id | slice:0:8 }}</span>
               </div>
             </div>
           </div>
@@ -106,8 +132,8 @@
   </ng-container>
 </div>
 
-<!-- 右键菜单 -->
 <div
+  #contextMenu
   class="picsur-context-menu"
   *ngIf="contextMenuVisible"
   [style.left.px]="contextMenuX"
@@ -158,25 +184,26 @@
   </button>
 </div>
 
-<!-- 全屏图片查看器 -->
-<ng-container *ngIf="viewerOpen">
+<ng-template #viewerTemplate>
   <div class="photo-viewer">
-    <!-- 背景遮罩 - 点击关闭 -->
     <div class="photo-viewer-backdrop" (click)="closeViewer()"></div>
 
-    <!-- 图片容器 -->
     <div class="photo-viewer-container" (wheel)="onViewerWheel($event)">
       <img
         *ngIf="viewerImage"
         class="photo-viewer-image"
         [src]="getFullImageUrl(viewerImage)"
         [alt]="viewerImage.file_name || '图片'"
-        [style.transform]="'scale(' + viewerZoom / 100 + ')'"
+        [ngStyle]="getViewerImageStyle()"
+        (load)="onViewerImageLoad($event)"
+        (mousedown)="onPanStart($event)"
+        (mousemove)="onPanMove($event)"
+        (mouseup)="onPanEnd()"
+        (mouseleave)="onPanEnd()"
         draggable="false"
       />
     </div>
 
-    <!-- 左右切换按钮 -->
     <button class="photo-viewer-nav photo-viewer-prev" (click)="viewerPrev()" title="上一张">
       <mat-icon>chevron_left</mat-icon>
     </button>
@@ -184,7 +211,6 @@
       <mat-icon>chevron_right</mat-icon>
     </button>
 
-    <!-- 底部信息栏 -->
     <div class="photo-viewer-info">
       <div class="photo-viewer-info-left">
         <div class="photo-name" *ngIf="viewerImage?.file_name">{{ viewerImage?.file_name }}</div>
@@ -206,9 +232,8 @@
       </div>
     </div>
   </div>
-</ng-container>
+</ng-template>
 
-<!-- 标签管理侧边面板 -->
 <div class="picsur-tag-panel-overlay" *ngIf="tagPanelOpen" (click)="closeTagPanel()">
   <div class="tag-panel" (click)="$event.stopPropagation()">
     <div class="tag-panel-header">
@@ -222,12 +247,10 @@
     </div>
 
     <div class="tag-panel-body" *ngIf="tagPanelImage">
-      <!-- 图片预览 -->
       <div class="tag-panel-preview">
         <img [src]="getThumbnailUrl(tagPanelImage)" [alt]="tagPanelImage.file_name || '图片'" />
       </div>
 
-      <!-- 图片信息 -->
       <div class="tag-panel-info">
         <div class="info-row">
           <mat-icon>fingerprint</mat-icon>
@@ -239,9 +262,7 @@
         </div>
       </div>
 
-      <!-- 标签显示/编辑 -->
       <div class="tag-panel-content">
-        <!-- 查看模式 -->
         <div class="tag-view-mode" *ngIf="!tagEditMode">
           <div class="current-tag" [class.has-tag]="hasTag(tagPanelImage)">
             <mat-icon>{{ hasTag(tagPanelImage) ? 'label' : 'label_outline' }}</mat-icon>
@@ -260,7 +281,6 @@
           </div>
         </div>
 
-        <!-- 编辑模式 -->
         <div class="tag-edit-mode" *ngIf="tagEditMode">
           <mat-form-field appearance="outline" class="tag-input">
             <mat-label>标签内容</mat-label>
