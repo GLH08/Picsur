@@ -1,5 +1,8 @@
 # Picsur 图床
 
+[![Build and Push Docker Image](https://github.com/GLH08/Picsur/actions/workflows/docker-build.yml/badge.svg)](https://github.com/GLH08/Picsur/actions/workflows/docker-build.yml)
+[![Docker Image Version](https://img.shields.io/docker/v/glh08/picsur/latest?label=ghcr.io)](https://github.com/GLH08/Picsur/packages)
+
 一个功能完善的自托管图床系统，支持多种图片和视频格式、相册管理、用户权限控制等。
 
 ## 功能特性
@@ -184,19 +187,36 @@ crontab -e
 每次推送代码到 GitHub 会自动：
 
 1. 运行 Migration 检查
-2. 构建并推送 Docker 镜像到 GitHub Container Registry
-3. 镜像标签策略：
-   - `main` 分支：`latest`
-   - 其他分支：`branch-name-sha`
-   - 标签：`v1.2.3`, `v1.2`, `v1`
+2. 构建并推送 Docker 镜像到 GitHub Container Registry（`latest` 标签）
 
 ### 镜像地址
 
 ```
 ghcr.io/glh08/picsur:latest
-ghcr.io/glh08/picsur:main-sha
-ghcr.io/glh08/picsur:v1.2.3
 ```
+
+### 部署到生产服务器
+
+推送代码后，GitHub Actions 自动构建并推送镜像。手动部署到服务器：
+
+```bash
+# 1. 登录生产服务器
+ssh user@your-server-ip
+
+# 2. 进入部署目录
+cd /opt/picsur
+
+# 3. 拉取最新镜像
+docker compose -f docker-compose.remote.yml pull
+
+# 4. 重启容器
+docker compose -f docker-compose.remote.yml up -d
+
+# 5. 查看运行状态
+docker compose -f docker-compose.remote.yml ps
+```
+
+> **提示**：首次部署前，需确保服务器已安装 Docker 并配置好 `docker-compose.remote.yml` 和 `.env` 文件。
 
 ## Prometheus 监控（可选）
 

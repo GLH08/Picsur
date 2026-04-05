@@ -2,6 +2,11 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## MiniMax M2.7
+- 指令理解优先关注目标、约束、输出格式和禁止项。
+- 长任务分阶段推进，持续维护 todo、验证结果和未完成项。
+- 保持提示简洁，避免无效重复；上下文压力升高时先收敛阶段成果再继续，整体输入输出控制在约 200k tokens 内。
+
 ## 项目概述
 
 Picsur 是一个自托管图床系统，采用 pnpm monorepo 结构，包含三个包：
@@ -49,6 +54,15 @@ docker compose logs -f picsur
 docker exec -it picsur_app sh
 ```
 
+### 测试
+```bash
+# 运行共享库测试
+pnpm test
+
+# 运行测试并输出覆盖率
+pnpm test:coverage
+```
+
 ### 代码风格
 ```bash
 # 格式化（后端）
@@ -86,9 +100,8 @@ AppModule
 ├── DemoManagerModule           # 演示模式
 ├── PicsurRoutesModule          # API 路由
 └── PicsurLayersModule          # 全局拦截器、过滤器、守卫
-```
 
-**代码组织**：
+**注意**：`MetricsModule`（Prometheus metrics）和 `VideoModule`（视频处理）是独立功能模块。
 | 目录 | 用途 |
 |------|------|
 | `src/routes/` | 路由层（controllers） |
@@ -113,13 +126,15 @@ AppModule
 ## Docker 构建
 
 多阶段构建，容器内完整保留源码和构建产物：
-1. `node:20-alpine AS builder` — 构建 shared、backend、frontend
-2. `node:20-alpine AS production` — 复制所有产物，启动 NestJS
+1. `node:24-alpine AS builder` — 构建 shared、backend、frontend
+2. `node:24-alpine AS production` — 复制所有产物，启动 NestJS
 3. NestJS 通过 `@nestjs/serve-static` 提供前端静态文件
 
 容器内工作目录 `/app`，前端构建产物在 `/app/frontend/dist`，NestJS 从 `backend/dist/main.js` 启动。
 
 ## 注意事项
+
+- **前端重构**：存在 [FRONTEND_UI_REFACTOR_PLAN.md](FRONTEND_UI_REFACTOR_PLAN.md)，计划将 Angular Material 风格迁移到自定义 light-only 视觉系统
 
 - 后端使用 Fastify 而非默认 Express，`@nestjs/platform-fastify`
 - 图片处理依赖 `sharp`，需要 Node 原生构建环境
